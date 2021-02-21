@@ -32,7 +32,7 @@ ui <- navbarPage("T1 mapping challenge statistics", theme = shinytheme("flatly")
                                       inputId = "SitesID", 
                                       label = "Select a site", 
                                       choices = unique(stats$test$sid),
-                                      #selected = "1.001",
+                                      selected = "1.001",
                                       multiple = TRUE
                                   ),
                               ),
@@ -80,11 +80,11 @@ server <- function(input, output) {
     output$corrTable <- renderTable(stats$Correlation_coefficients)
     
     output$multPlot <- renderPlotly({
-        req(input$SitesID)
-        if (identical(input$SitesID, "")) return(NULL)
-        plot_ly(stats$test, x = ~sph, y = ~stdValues) %>%
-            filter(sid %in% input$SitesdID) %>%
-            group_by(sid) %>%
+        #req(input$SitesID)
+        #if (identical(input$SitesID, "")) return(NULL)
+        plot_ly(stats$test, x = ~sph, y = ~stdValues, split = ~sid) %>%
+            filter(sid %in% input$SitesID) %>%
+            #group_by(sid) %>%
             add_lines()
     })
     #output$multPlot <- renderPlotly({
