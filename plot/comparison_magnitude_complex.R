@@ -1,5 +1,7 @@
 comparison_magnitude_complex <- function(cases,listSpheres){
   pValues = data.frame()
+  meanMag = data.frame()
+  meanComp = data.frame()
   diff_Mag_Comp <- data.frame()
   diff_Perc_Mag_Comp <- data.frame()
   cnt <- 1
@@ -8,10 +10,14 @@ comparison_magnitude_complex <- function(cases,listSpheres){
       magData = as.numeric(unlist(listSpheres[[cases[j]]][k]))
       compData = as.numeric(unlist(listSpheres[[cases[j]+1]][k]))
       
+      meanMag[k,j] = mean(magData)
+      meanComp[k,j] = mean(compData)
+      
       ##DIFERENCE BETWEEN MAGNITUDE AND COMPLEX
       diff_Mag_Comp[k,j] = mean(magData) - mean(compData)
-      diff_Perc_Mag_Comp[k,j] = 100*(mean(magData) - mean(compData))/mean(magData)
+      diff_Perc_Mag_Comp[k,j] = 100*abs(mean(magData) - mean(compData))/mean(magData)
       
+      ##STATISTICAL TESTS (COMPARE MEANS)
       #Test for normality of data
       magnitudeNormTest = shapiro.test(magData)
       complexNormTest = shapiro.test(compData)
@@ -33,24 +39,38 @@ comparison_magnitude_complex <- function(cases,listSpheres){
     id = data[j,"id"]
     sid <- as.matrix(rep(id,14))
     sph <- as.matrix(1:14)
-    #stdValues <- stdSites[,j]
+    
+    ##CORRELATION ANALYSIS
+    corrTest <- cor.test(meanMag[,j], meanComp[,j], method = 'pearson')
+    Pearson_test <- data.frame(id, corrTest$estimate, corrTest$p.value)
+    
+    #DIFFERENCE AND PERCENTAGE DIFFERENCE
     data_Mag_Comp <- data.frame(sid, sph, diff_Mag_Comp[,j], diff_Perc_Mag_Comp[,j])
+    corr_Mag_Comp <- data.frame(sid, sph, meanMag[,j], meanComp[,j])
     
     if (j==1){
       dataTmp = rbind(data.frame(), data_Mag_Comp)
+      corrTmp = rbind(data.frame(), corr_Mag_Comp)
+      PearsonTmp = rbind(data.frame(), Pearson_test)
     }
     else{
       dataComparison = rbind(dataTmp, data_Mag_Comp)
+      dataCorrelation = rbind(corrTmp, corr_Mag_Comp)
+      dataPearson = rbind(PearsonTmp, Pearson_test)
       dataTmp <- dataComparison
+      corrTmp <- dataCorrelation
+      PearsonTmp <- dataPearson
     }
-    cnt = cnt + 1
   }
   
   colnames(dataComparison) <- c('sid', 'sph', 'diff', 'percDiff')
-  returnComparison <- list("dataMagComp" = dataComparison,
-                      "pValues" = pValues)
+  colnames(dataCorrelation) <- c('sid', 'sph', 'Magnitude', 'Complex')
+  colnames(dataPearson) <- c('Site', 'R', 'p-Value')
   
-  #test = magData[[25]][1] - compData[[25]][1]
+  returnComparison <- list("dataMagComp" = dataComparison,
+                           "dataCorr" = dataCorrelation,
+                           "PearsonCorr" = dataPearson,
+                           "pValues" = pValues)
   
   return(returnComparison)
 }

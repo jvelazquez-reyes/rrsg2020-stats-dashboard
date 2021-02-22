@@ -8,13 +8,14 @@ measuredT1_against_referenceT1 <- function(scans){
   BAList = list()
   stdList = list()
   rmseList = list()
+  test <- data.frame()
   for (j in scans){
     data2plot <- data.frame()
     #std2plot <- data.frame()
     rmse2plot <- data.frame()
     data2coef <- data.frame()
     
-    test <- data.frame()
+    
     
     phantomTemperature = as.numeric(data[j,"phantom.temperature"])
     phantomVersion = as.numeric(data[j,"phantom.version"])
@@ -40,7 +41,6 @@ measuredT1_against_referenceT1 <- function(scans){
     std2plot <- data.frame(sid, sph, refValue, stdValues)
     
     if (j==scans[1]){
-      #test2 <- std2plot
       test2 = rbind(data.frame(), std2plot)
     }
     else{

@@ -14,21 +14,39 @@ ui <- navbarPage("T1 mapping challenge statistics", theme = shinytheme("flatly")
                           sidebarLayout(
                               sidebarPanel(
                                   selectizeInput(
-                                      inputId = "SitesID", 
+                                      inputId = "DiffSitesID", 
                                       label = "Select a site", 
-                                      choices = unique(stats$test$sid),
+                                      choices = unique(magVScomp$dataMagComp$sid),
                                       #selected = "1.001",
                                       multiple = TRUE
                                   ),
+                                  
                                   radioButtons(inputId = "typeComparison",
                                                label = "Choose the type of plot to display",
-                                               choices = c("Difference", "Difference (%)", "Correlation"),
-                                               selected = "Difference")
+                                               choices = c("Difference", "Difference (%)"),
+                                               #selected = "Difference")
+                                  ),
+                                  
+                                  selectizeInput(
+                                      inputId = "CorrSitesID", 
+                                      label = "Select a site to show a dispersion plot", 
+                                      choices = unique(magVScomp$dataCorr$sid),
+                                      #selected = "1.001",
+                                      multiple = FALSE
+                                  ),
+                                  
+                                  h2("Correlation coefficients"),
+                                  tableOutput(outputId = "PearsonCorr"),
+                                  
+                                  helpText("Mathieu, B., et al. MathieuPaperName")
+                                  
                               ),
                               
                               mainPanel(
-                                  h3("Comparison between Magnitude and Complex"),
+                                  h3("Difference between Magnitude and Complex"),
                                   plotlyOutput(outputId = "MagComp"),
+                                  h3("Correlation between Magnitude and Complex"),
+                                  plotlyOutput(outputId = "CorrMagComp")
                               )
                           )
                  ),
@@ -95,13 +113,39 @@ server <- function(input, output) {
     
     #TAB 1
     output$MagComp <- renderPlotly({
-        #req(input$SitesID)
-        #if (identical(input$SitesID, "")) return(NULL)
-        plot_ly(magVScomp$dataMagComp, x = ~sph, y = ~diff, split = ~sid) %>%
-            filter(sid %in% input$SitesID) %>%
-            #group_by(sid) %>%
-            add_lines()
+        if (input$typeComparison == "Difference"){
+            plot_ly(magVScomp$dataMagComp, x = ~sph, y = ~diff, split = ~sid) %>%
+                filter(sid %in% input$DiffSitesID) %>%
+                #group_by(sid) %>%
+                add_lines()
+        }
+        else if (input$typeComparison == "Difference (%)"){
+            plot_ly(magVScomp$dataMagComp, x = ~sph, y = ~percDiff, split = ~sid) %>%
+                filter(sid %in% input$DiffSitesID) %>%
+                #group_by(sid) %>%
+                add_lines()
+        }
     })
+        
+    output$CorrMagComp <- renderPlotly({
+        p = ggplot(data = filter(magVScomp$dataCorr, sid %in% input$CorrSitesID)) +
+            geom_point(aes(x = Complex, y = Magnitude), color = "black", size = 1.5) +
+            labs(x = "Complex T1 value (ms)", y = "Magnitude T1 value (ms)") +
+            geom_smooth(aes(x = Complex, y = Magnitude), method = "lm", se = TRUE, color = "red", lwd = 0.5) +
+            geom_abline(intercept = 0, slope = 1, lwd = 0.7, col = "blue") +
+            theme(axis.line = element_line(colour = "black"), 
+                  panel.grid.major = element_blank(), 
+                  panel.grid.minor = element_blank(), 
+                  panel.border = element_blank(), 
+                  panel.background = element_blank()) +
+            theme_bw() + theme(plot.title = element_text(size = 14, face = "bold", hjust = 0.5),
+                               axis.title = element_text(size = 12),
+                               axis.text = element_text(size = 12))
+        
+        ggplotly(p)
+    })
+    
+    output$PearsonCorr <- renderTable(magVScomp$PearsonCorr)
     
     #TAB 2
     output$distPlot <- renderPlotly({
