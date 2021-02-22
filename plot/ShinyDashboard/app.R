@@ -8,6 +8,32 @@ source(paste(path_to_src, "allStats.R", sep = ""))
 
 # Define UI for application that draws a histogram
 ui <- navbarPage("T1 mapping challenge statistics", theme = shinytheme("flatly"),
+                 
+                 #TAB 1
+                 tabPanel("Magnitud VS Complex",
+                          sidebarLayout(
+                              sidebarPanel(
+                                  selectizeInput(
+                                      inputId = "SitesID", 
+                                      label = "Select a site", 
+                                      choices = unique(stats$test$sid),
+                                      #selected = "1.001",
+                                      multiple = TRUE
+                                  ),
+                                  radioButtons(inputId = "typeComparison",
+                                               label = "Choose the type of plot to display",
+                                               choices = c("Difference", "Difference (%)", "Correlation"),
+                                               selected = "Difference")
+                              ),
+                              
+                              mainPanel(
+                                  h3("Comparison between Magnitude and Complex"),
+                                  plotlyOutput(outputId = "MagComp"),
+                              )
+                          )
+                 ),
+                 
+                 #TAB 2
                  tabPanel("Reliability",
                          sidebarLayout(
                          sidebarPanel(
@@ -25,6 +51,8 @@ ui <- navbarPage("T1 mapping challenge statistics", theme = shinytheme("flatly")
                          )
                      )
                  ),
+                 
+                 #TAB 3
                  tabPanel("Plotly",
                           sidebarLayout(
                               sidebarPanel(
@@ -34,7 +62,7 @@ ui <- navbarPage("T1 mapping challenge statistics", theme = shinytheme("flatly")
                                       choices = unique(stats$test$sid),
                                       selected = "1.001",
                                       multiple = TRUE
-                                  ),
+                                  )
                               ),
                               
                               mainPanel(
@@ -43,6 +71,8 @@ ui <- navbarPage("T1 mapping challenge statistics", theme = shinytheme("flatly")
                               )
                           )
                  ),
+                 
+                 #TAB 4
                  tabPanel("Bias",
                           sidebarLayout(
                               sidebarPanel(
@@ -63,6 +93,17 @@ ui <- navbarPage("T1 mapping challenge statistics", theme = shinytheme("flatly")
 # Define server logic required to draw a histogram
 server <- function(input, output) {
     
+    #TAB 1
+    output$MagComp <- renderPlotly({
+        #req(input$SitesID)
+        #if (identical(input$SitesID, "")) return(NULL)
+        plot_ly(magVScomp$dataMagComp, x = ~sph, y = ~diff, split = ~sid) %>%
+            filter(sid %in% input$SitesID) %>%
+            #group_by(sid) %>%
+            add_lines()
+    })
+    
+    #TAB 2
     output$distPlot <- renderPlotly({
         if (input$typeplot == "Bland-Altman"){
             plotType <- stats$Bland_Altman
@@ -79,6 +120,7 @@ server <- function(input, output) {
     
     output$corrTable <- renderTable(stats$Correlation_coefficients)
     
+    #TAB 3
     output$multPlot <- renderPlotly({
         #req(input$SitesID)
         #if (identical(input$SitesID, "")) return(NULL)
@@ -96,6 +138,7 @@ server <- function(input, output) {
     #    ggplotly(multPlot)
     #})
     
+    #TAB 4
     output$distPlot2 <- renderPlotly({
         if (input$typeplot2 == "Standard Deviation"){
             plotType2 <- stats$STD
