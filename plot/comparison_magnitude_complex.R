@@ -36,7 +36,7 @@ comparison_magnitude_complex <- function(cases,listSpheres){
       }
     }
     
-    id = data[j,"id"]
+    id = data[cases[j],"id"]
     sid <- as.matrix(rep(id,14))
     sph <- as.matrix(1:14)
     
