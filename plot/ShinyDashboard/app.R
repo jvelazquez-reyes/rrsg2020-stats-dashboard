@@ -52,6 +52,52 @@ ui <- navbarPage("T1 mapping challenge statistics", theme = shinytheme("flatly")
                  ),
                  
                  #TAB 2
+                 tabPanel("Comparison across sites",
+                          tabsetPanel(
+                          
+                                      tabPanel(sidebarLayout(
+                                          sidebarPanel(
+                                              selectizeInput(
+                                                  inputId = "SiteUSID", 
+                                                  label = "Select a site", 
+                                                  choices = unique(SiteUS$dataSite$Site),
+                                                  multiple = TRUE
+                                              ),
+                                              
+                                              helpText("Mathieu, B., et al. MathieuPaperName")
+                                              
+                                          ),
+                                          
+                                          mainPanel(
+                                              h3("US Data"),
+                                              plotlyOutput(outputId = "CompUS")
+                                          )
+                                      )
+                                      ),
+                                      tabPanel(sidebarLayout(
+                                          sidebarPanel(
+                                              selectizeInput(
+                                                  inputId = "SiteGermanyID", 
+                                                  label = "Select a site", 
+                                                  choices = unique(SiteGermany$dataSite$Site),
+                                                  multiple = TRUE
+                                              ),
+                                              
+                                              helpText("Mathieu, B., et al. MathieuPaperName")
+                                              
+                                          ),
+                                          
+                                          mainPanel(
+                                              h3("Germany Data"),
+                                              plotlyOutput(outputId = "CompGermany")
+                                          )
+                                      )
+                                      )
+                          )
+
+                 ),
+
+                 #TAB 3
                  tabPanel("Reliability",
                          sidebarLayout(
                          sidebarPanel(
@@ -70,7 +116,7 @@ ui <- navbarPage("T1 mapping challenge statistics", theme = shinytheme("flatly")
                      )
                  ),
                  
-                 #TAB 3
+                 #TAB 4
                  tabPanel("Plotly",
                           sidebarLayout(
                               sidebarPanel(
@@ -90,7 +136,7 @@ ui <- navbarPage("T1 mapping challenge statistics", theme = shinytheme("flatly")
                           )
                  ),
                  
-                 #TAB 4
+                 #TAB 5
                  tabPanel("Bias",
                           sidebarLayout(
                               sidebarPanel(
@@ -148,6 +194,22 @@ server <- function(input, output) {
     output$PearsonCorr <- renderTable(magVScomp$PearsonCorr)
     
     #TAB 2
+    output$CompUS <- renderPlotly({
+        plot_ly(SiteUS$dataSite, x = ~Sphere, y = ~Mean, split = ~Site) %>%
+            filter(Site %in% input$SiteUSID) %>%
+            #group_by(sid) %>%
+            add_lines()
+    })
+    
+    output$CompGermany <- renderPlotly({
+        plot_ly(SiteGermany$dataSite, x = ~Sphere, y = ~Mean, split = ~Site) %>%
+            filter(Site %in% input$SiteGermanyID) %>%
+            #group_by(sid) %>%
+            add_lines()
+    })
+    
+    
+    #TAB 3
     output$distPlot <- renderPlotly({
         if (input$typeplot == "Bland-Altman"){
             plotType <- stats$Bland_Altman
@@ -164,7 +226,7 @@ server <- function(input, output) {
     
     output$corrTable <- renderTable(stats$Correlation_coefficients)
     
-    #TAB 3
+    #TAB 4
     output$multPlot <- renderPlotly({
         #req(input$SitesID)
         #if (identical(input$SitesID, "")) return(NULL)
@@ -182,7 +244,7 @@ server <- function(input, output) {
     #    ggplotly(multPlot)
     #})
     
-    #TAB 4
+    #TAB 5
     output$distPlot2 <- renderPlotly({
         if (input$typeplot2 == "Standard Deviation"){
             plotType2 <- stats$STD

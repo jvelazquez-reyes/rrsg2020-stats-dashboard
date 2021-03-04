@@ -37,10 +37,11 @@ magVScomp <- comparison_magnitude_complex(cases,listSpheres)
 ##ANALYSIS WITHIN GROUPS ACROSS SITES
 source(paste(path_to_src, "comparison_across_sites.R", sep = ""))
 
-germany <- 34:37
-site <- germany
+US <- 34:39
+Germany <- 13:26
 
-comparisonSite <- comparison_across_sites(site = germany)
+SiteUS <- comparison_across_sites(US)
+SiteGermany <- comparison_across_sites(Germany)
 
 ##Call Python script from R##
 use_python(path_to_python, required=T)
