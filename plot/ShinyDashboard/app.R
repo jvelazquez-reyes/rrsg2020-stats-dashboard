@@ -163,13 +163,13 @@ server <- function(input, output) {
             plot_ly(magVScomp$dataMagComp, x = ~sph, y = ~diff, split = ~sid) %>%
                 filter(sid %in% input$DiffSitesID) %>%
                 #group_by(sid) %>%
-                add_lines()
+                add_trace(type = 'scatter', mode = 'lines+markers')
         }
         else if (input$typeComparison == "Difference (%)"){
             plot_ly(magVScomp$dataMagComp, x = ~sph, y = ~percDiff, split = ~sid) %>%
                 filter(sid %in% input$DiffSitesID) %>%
                 #group_by(sid) %>%
-                add_lines()
+                add_trace(type = 'scatter', mode = 'lines+markers')
         }
     })
         
@@ -198,14 +198,14 @@ server <- function(input, output) {
         plot_ly(SiteUS$dataSite, x = ~Sphere, y = ~Mean, split = ~Site) %>%
             filter(Site %in% input$SiteUSID) %>%
             #group_by(sid) %>%
-            add_lines()
+            add_trace(type = 'scatter', mode = 'lines+markers')
     })
     
     output$CompGermany <- renderPlotly({
         plot_ly(SiteGermany$dataSite, x = ~Sphere, y = ~Mean, split = ~Site) %>%
             filter(Site %in% input$SiteGermanyID) %>%
             #group_by(sid) %>%
-            add_lines()
+            add_trace(type = 'scatter', mode = 'lines+markers')
     })
     
     
