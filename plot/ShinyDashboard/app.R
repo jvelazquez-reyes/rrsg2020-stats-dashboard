@@ -163,13 +163,21 @@ server <- function(input, output) {
             plot_ly(magVScomp$dataMagComp, x = ~sph, y = ~diff, split = ~sid) %>%
                 filter(sid %in% input$DiffSitesID) %>%
                 #group_by(sid) %>%
-                add_trace(type = 'scatter', mode = 'lines+markers')
+                add_trace(type = 'scatter', mode = 'lines+markers',
+                          hoverinfo = 'text',
+                          text = ~paste('<br> Site: ', sid,
+                                        '<br> Difference: ', diff,
+                                        '<br> Sphere: ', sph))
         }
         else if (input$typeComparison == "Difference (%)"){
             plot_ly(magVScomp$dataMagComp, x = ~sph, y = ~percDiff, split = ~sid) %>%
                 filter(sid %in% input$DiffSitesID) %>%
                 #group_by(sid) %>%
-                add_trace(type = 'scatter', mode = 'lines+markers')
+                add_trace(type = 'scatter', mode = 'lines+markers',
+                          hoverinfo = 'text',
+                          text = ~paste('<br> Site: ', sid,
+                                        '<br> Difference (%): ', percDiff,
+                                        '<br> Sphere: ', sph))
         }
     })
         
@@ -198,14 +206,22 @@ server <- function(input, output) {
         plot_ly(SiteUS$dataSite, x = ~Sphere, y = ~Mean, split = ~Site) %>%
             filter(Site %in% input$SiteUSID) %>%
             #group_by(sid) %>%
-            add_trace(type = 'scatter', mode = 'lines+markers')
+            add_trace(type = 'scatter', mode = 'lines+markers',
+                      hoverinfo = 'text',
+                      text = ~paste('<br> Site: ', Site,
+                                    '<br> Mean: ', Mean,
+                                    '<br> Sphere: ', Sphere))
     })
     
     output$CompGermany <- renderPlotly({
         plot_ly(SiteGermany$dataSite, x = ~Sphere, y = ~Mean, split = ~Site) %>%
             filter(Site %in% input$SiteGermanyID) %>%
             #group_by(sid) %>%
-            add_trace(type = 'scatter', mode = 'lines+markers')
+            add_trace(type = 'scatter', mode = 'lines+markers',
+                      hoverinfo = 'text',
+                      text = ~paste('<br> Site: ', Site,
+                                    '<br> Mean: ', Mean,
+                                    '<br> Sphere: ', Sphere))
     })
     
     
