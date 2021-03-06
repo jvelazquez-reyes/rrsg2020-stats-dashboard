@@ -158,11 +158,12 @@ ui <- navbarPage("T1 mapping challenge statistics", theme = shinytheme("flatly")
 server <- function(input, output) {
     
     #TAB 1
+    MagCom_colors <- setNames(rainbow(nrow(magVScomp$dataMagComp)), magVScomp$dataMagComp$sid)
     output$MagComp <- renderPlotly({
         if (input$typeComparison == "Difference"){
-            plot_ly(magVScomp$dataMagComp, x = ~sph, y = ~diff, split = ~sid) %>%
+            plot_ly(magVScomp$dataMagComp, x = ~sph, y = ~diff, split = ~sid, color = ~sid, colors = MagCom_colors) %>%
                 filter(sid %in% input$DiffSitesID) %>%
-                #group_by(sid) %>%
+                group_by(sid) %>%
                 add_trace(type = 'scatter', mode = 'lines+markers',
                           hoverinfo = 'text',
                           text = ~paste('<br> Site: ', sid,
@@ -170,7 +171,7 @@ server <- function(input, output) {
                                         '<br> Sphere: ', sph))
         }
         else if (input$typeComparison == "Difference (%)"){
-            plot_ly(magVScomp$dataMagComp, x = ~sph, y = ~percDiff, split = ~sid) %>%
+            plot_ly(magVScomp$dataMagComp, x = ~sph, y = ~percDiff, split = ~sid, color = ~sid, colors = MagCom_colors) %>%
                 filter(sid %in% input$DiffSitesID) %>%
                 #group_by(sid) %>%
                 add_trace(type = 'scatter', mode = 'lines+markers',
@@ -202,8 +203,9 @@ server <- function(input, output) {
     output$PearsonCorr <- renderTable(magVScomp$PearsonCorr)
     
     #TAB 2
+    US_colors <- setNames(rainbow(nrow(SiteUS$dataSite)), SiteUS$dataSite$Site)
     output$CompUS <- renderPlotly({
-        plot_ly(SiteUS$dataSite, x = ~Sphere, y = ~Mean, split = ~Site) %>%
+        plot_ly(SiteUS$dataSite, x = ~Sphere, y = ~Mean, split = ~Site, color = ~Site, colors = US_colors) %>%
             filter(Site %in% input$SiteUSID) %>%
             #group_by(sid) %>%
             add_trace(type = 'scatter', mode = 'lines+markers',
@@ -213,8 +215,9 @@ server <- function(input, output) {
                                     '<br> Sphere: ', Sphere))
     })
     
+    Germany_colors <- setNames(rainbow(nrow(SiteGermany$dataSite)), SiteGermany$dataSite$Site)
     output$CompGermany <- renderPlotly({
-        plot_ly(SiteGermany$dataSite, x = ~Sphere, y = ~Mean, split = ~Site) %>%
+        plot_ly(SiteGermany$dataSite, x = ~Sphere, y = ~Mean, split = ~Site, color = ~Site, colors = Germany_colors) %>%
             filter(Site %in% input$SiteGermanyID) %>%
             #group_by(sid) %>%
             add_trace(type = 'scatter', mode = 'lines+markers',
