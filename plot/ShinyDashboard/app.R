@@ -168,7 +168,8 @@ server <- function(input, output) {
                           hoverinfo = 'text',
                           text = ~paste('<br> Site: ', sid,
                                         '<br> Difference: ', diff,
-                                        '<br> Sphere: ', sph))
+                                        '<br> Sphere: ', sph)) %>%
+                layout(xaxis = list(title = "Reference Temperature (°C)"), yaxis = list(title = "Absolute T1 difference (ms)"))
         }
         else if (input$typeComparison == "Difference (%)"){
             plot_ly(magVScomp$dataMagComp, x = ~sph, y = ~percDiff, split = ~sid, color = ~sid, colors = MagCom_colors) %>%
@@ -178,7 +179,8 @@ server <- function(input, output) {
                           hoverinfo = 'text',
                           text = ~paste('<br> Site: ', sid,
                                         '<br> Difference (%): ', percDiff,
-                                        '<br> Sphere: ', sph))
+                                        '<br> Sphere: ', sph)) %>%
+                layout(xaxis = list(title = "Reference Temperature (°C)"), yaxis = list(title = "Percentual T1 difference (%)"))
         }
     })
         
@@ -212,7 +214,8 @@ server <- function(input, output) {
                       hoverinfo = 'text',
                       text = ~paste('<br> Site: ', Site,
                                     '<br> Mean: ', Mean,
-                                    '<br> Sphere: ', Sphere))
+                                    '<br> Sphere: ', Sphere)) %>%
+            layout(xaxis = list(title = "Reference Temperature (°C)"), yaxis = list(title = "T1 value (ms)"))
     })
     
     Germany_colors <- setNames(rainbow(nrow(SiteGermany$dataSite)), SiteGermany$dataSite$Site)
@@ -224,7 +227,8 @@ server <- function(input, output) {
                       hoverinfo = 'text',
                       text = ~paste('<br> Site: ', Site,
                                     '<br> Mean: ', Mean,
-                                    '<br> Sphere: ', Sphere))
+                                    '<br> Sphere: ', Sphere)) %>%
+            layout(xaxis = list(title = "Reference Temperature (°C)"), yaxis = list(title = "T1 value (ms)"))
     })
     
     
