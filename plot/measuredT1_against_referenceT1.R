@@ -11,7 +11,7 @@ measuredT1_against_referenceT1 <- function(scans){
   test <- data.frame()
   for (j in scans){
     data2plot <- data.frame()
-    #std2plot <- data.frame()
+    std2plot <- data.frame()
     rmse2plot <- data.frame()
     data2coef <- data.frame()
     
@@ -22,43 +22,51 @@ measuredT1_against_referenceT1 <- function(scans){
     id = data[j,"id"]
     
     if (phantomVersion<42){
-      refValue = temperature_correction(phantomTemperature,phantomVersion)
+      refTemp = temperature_correction(phantomTemperature,phantomVersion)
     } else {
-      refValue = temperature_correction(phantomTemperature,phantomVersion)
+      refTemp = temperature_correction(phantomTemperature,phantomVersion)
     }
     
     for (k in seq(1,14)){
       measuredT1 = as.numeric(unlist(listSpheres[[j]][k]))
       meanSites[k,j] = mean(measuredT1)
       stdSites[k,j] = sd(measuredT1)
-      mseSites[k,j] = rmse(measuredT1, rep(refValue[k],length(measuredT1)))
-      rmseSites[k,j] = sqrt(rmse(measuredT1, rep(refValue[k],length(measuredT1))))
+      rmseSites[k,j] = rmse(measuredT1, rep(refTemp[k],length(measuredT1)))
     }
     
     sid <- as.matrix(rep(id,14))
     sph <- as.matrix(1:14)
-    stdValues <- stdSites[,j]
-    std2plot <- data.frame(sid, sph, refValue, stdValues)
-    
-    if (j==scans[1]){
-      test2 = rbind(data.frame(), std2plot)
-    }
-    else{
-      test = rbind(test2, std2plot)
-      test2 <- test
-    }
-    
-    
-    rmseValues <- rmseSites[j,]
-    rmseTest <- 
-    rmse2plot <- data.frame(refValue, rmseValues)
     
     #Bland-Altman analysis
     measValue <- meanSites[,j]
-    reference <- refValue
+    reference <- refTemp
     difference <- measValue - reference
     average <- (measValue + reference)/2
-    data2plot <- data.frame(measValue, reference, difference, average)
+    BA2plot <- data.frame(sid, sph, measValue, reference, difference, average)
+    
+    #STD
+
+    stdValues <- stdSites[,j]
+    std2plot <- data.frame(sid, sph, refTemp, stdValues)
+    
+    #RMSE
+    rmseValues <- rmseSites[,j]
+    rmse2plot <- data.frame(sid, sph, refTemp, rmseValues)
+    
+    #Long format data frame
+    if (j==scans[1]){
+      stdTmp = rbind(data.frame(), std2plot)
+      rmseTmp = rbind(data.frame(), rmse2plot)
+      BATmp = rbind(data.frame(), BA2plot)
+    }
+    else{
+      stdData = rbind(stdTmp, std2plot)
+      rmseData = rbind(rmseTmp, rmse2plot)
+      BAData = rbind(BATmp, BA2plot)
+      stdTmp <- stdData
+      rmseTmp <- rmseData
+      BATmp <- BAData
+    }
     
     data2coef <- data.frame(measValue, reference)
     #ICC(1,1): It reflects the variation between 2 or more raters who measure the same group of subjects.
@@ -124,7 +132,7 @@ measuredT1_against_referenceT1 <- function(scans){
     BAList[[j]] = ggplotly(p)
     
     #STD
-    p = ggplot(data = std2plot, aes(x = refValue, y = stdValues)) +
+    p = ggplot(data = std2plot, aes(x = refTemp, y = stdValues)) +
       geom_point(color = "black", size = 1.5) +
       labs(title = paste("Site ID:", id, sep = ""), x = "Reference T1 (ms)", y = "SD (ms)") +
       theme(axis.line = element_line(colour = "black"), 
@@ -138,7 +146,7 @@ measuredT1_against_referenceT1 <- function(scans){
     stdList[[j]] = ggplotly(p)
     
     #RMSE
-    #p = ggplot(data = rmse2plot, aes(x = refValue, y = rmseValues)) +
+    #p = ggplot(data = rmse2plot, aes(x = refTemp, y = rmseValues)) +
     #  geom_point(color = "black", size = 1.5) +
     #  labs(title = paste("Site ID:", id, sep = ""), x = "Reference T1 (ms)", y = "RMSE (ms)") +
     #  theme(axis.line = element_line(colour = "black"), 
@@ -152,11 +160,9 @@ measuredT1_against_referenceT1 <- function(scans){
     #rmseList[[j]] = ggplotly(p)
   }
   returnStats <- list("Correlation_coefficients" = correlations,
-                     "Bland_Altman" = BAList,
-                     "Dispersion" = dispersionList,
-                     "STD" = stdList,
-                     #"RMSE" = rmseList,
-                     "test" = test)
+                     "BAData" = BAData,
+                     "stdData" = stdData,
+                     "rmseData" = rmseData)
   return(returnStats)
   
 }

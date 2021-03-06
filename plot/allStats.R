@@ -51,7 +51,7 @@ source_python(paste(path_to_src, "nist.py", sep = ""))
 source(paste(path_to_src, "measuredT1_against_referenceT1.R", sep = ""))
 
 scans <- 1:4
-stats <- measuredT1_against_referenceT1(scans)
+RefVSMeas <- measuredT1_against_referenceT1(scans)
 
 
 #dispersionList[[2]]

@@ -98,20 +98,30 @@ ui <- navbarPage("T1 mapping challenge statistics", theme = shinytheme("flatly")
                  ),
 
                  #TAB 3
-                 tabPanel("Reliability",
+                 tabPanel("Reference VS Measured T1",
                          sidebarLayout(
-                         sidebarPanel(
-                             radioButtons(inputId = "typeplot",
-                                          label = "Choose the type of plot to display",
-                                          choices = c("Bland-Altman", "Dispersion"),
-                                          selected = "Bland-Altman")
+                             sidebarPanel(
+                                 selectizeInput(
+                                     inputId = "RefMeasSitesID", 
+                                     label = "Select a site", 
+                                     choices = unique(RefVSMeas$BAData$sid),
+                                     #selected = "1.001",
+                                     multiple = FALSE
+                                 ),
+                                 
+                                 #h2("Correlation coefficients"),
+                                 #tableOutput(outputId = "PearsonCorr"),
+                                 
+                                 helpText("Mathieu, B., et al. MathieuPaperName")
                          ),
                          
                          mainPanel(
-                             h3("Plots"),
-                             plotlyOutput(outputId = "distPlot"),
+                             h3("Bland-Altman analysis"),
+                             plotlyOutput(outputId = "BAPlot"),
+                             h3("Correlation analysis"),
+                             plotlyOutput(outputId = "CorrRefMeasPlot"),
                              h3("Correlation coefficients"),
-                             tableOutput(outputId = "corrTable")
+                             tableOutput(outputId = "CorrRefMeas")
                          )
                      )
                  ),
@@ -185,7 +195,7 @@ server <- function(input, output) {
     })
         
     output$CorrMagComp <- renderPlotly({
-        p = ggplot(data = filter(magVScomp$dataCorr, sid %in% input$CorrSitesID)) +
+        p <- ggplot(data = filter(magVScomp$dataCorr, sid %in% input$CorrSitesID)) +
             geom_point(aes(x = Complex, y = Magnitude), color = "black", size = 1.5) +
             labs(x = "Complex T1 value (ms)", y = "Magnitude T1 value (ms)") +
             geom_smooth(aes(x = Complex, y = Magnitude), method = "lm", se = TRUE, color = "red", lwd = 0.5) +
@@ -233,21 +243,57 @@ server <- function(input, output) {
     
     
     #TAB 3
-    output$distPlot <- renderPlotly({
-        if (input$typeplot == "Bland-Altman"){
-            plotType <- stats$Bland_Altman
-        }
-        if (input$typeplot == "Dispersion"){
-            plotType <- stats$Dispersion
-        }
-        plot1 = plotType[[1]]
-        plot2 = plotType[[2]]
-        plot3 = plotType[[3]]
-        plot4 = plotType[[4]]
-        subplot(list(plot1,plot2,plot3,plot4), nrows = 2, margin = 0.06, shareX = T, shareY = T)
+    output$BAPlot <- renderPlotly({
+        p <- ggplot(data = filter(RefVSMeas$BAData, sid %in% input$RefMeasSitesID)) +
+            geom_point(aes(x = average, y = difference), pch = 1, size = 1.5, col = "black") +
+            labs(x = "Average T1 (ms)", 
+                 y = "Measured - Reference") +
+            geom_smooth(aes(x = average, y = difference), method = "lm", se = TRUE, fill = "lightgrey", lwd = 0.1, lty = 5) +
+            ylim(mean(RefVSMeas$BAData$difference) - 4 * sd(RefVSMeas$BAData$difference), 
+                 mean(RefVSMeas$BAData$difference) + 4 * sd(RefVSMeas$BAData$difference)) +
+            # Línea de bias
+            geom_hline(yintercept = mean(RefVSMeas$BAData$difference), lwd = 1) +
+            # Línea en y=0
+            geom_hline(yintercept = 0, lty = 3, col = "grey30") +
+            # Limits of Agreement
+            geom_hline(yintercept = mean(RefVSMeas$BAData$difference) + 
+                           1.96 * sd(RefVSMeas$BAData$difference), 
+                       lty = 2, col = "firebrick") +
+            geom_hline(yintercept = mean(RefVSMeas$BAData$difference) - 
+                           1.96 * sd(RefVSMeas$BAData$difference), 
+                       lty = 2, col = "firebrick") +
+            theme(panel.grid.major = element_blank(), 
+                  panel.grid.minor = element_blank()) +
+            geom_text(label = "Bias", x = 2000, y = 30, size = 3, 
+                      colour = "black") +
+            geom_text(label = "+1.96SD", x = 2000, y = 190, size = 3, 
+                      colour = "firebrick") +
+            geom_text(label = "-1.96SD", x = 2000, y = -110, size = 3, 
+                      colour = "firebrick") +
+            theme_bw() + theme(plot.title = element_text(size = 14, face = "bold", hjust = 0.5),
+                               axis.title = element_text(size = 12),
+                               axis.text = element_text(size = 12))
+        ggplotly(p)
     })
     
-    output$corrTable <- renderTable(stats$Correlation_coefficients)
+    output$CorrRefMeasPlot <- renderPlotly({
+        p <- ggplot(data = filter(RefVSMeas$BAData, sid %in% input$RefMeasSitesID)) +
+            geom_point(aes(x = reference, y = measValue), color = "black", size = 1.5) +
+            labs(x = "Reference T1 value (ms)", y = "Measured T1 value (ms)") +
+            geom_smooth(aes(x = reference, y = measValue), method = "lm", se = TRUE, color = "red", lwd = 0.5) +
+            geom_abline(intercept = 0, slope = 1, lwd = 0.7, col = "blue") +
+            theme(axis.line = element_line(colour = "black"), 
+                  panel.grid.major = element_blank(), 
+                  panel.grid.minor = element_blank(), 
+                  panel.border = element_blank(), 
+                  panel.background = element_blank()) +
+            theme_bw() + theme(plot.title = element_text(size = 14, face = "bold", hjust = 0.5),
+                               axis.title = element_text(size = 12),
+                               axis.text = element_text(size = 12))
+        ggplotly(p)
+    })
+    
+    output$CorrRefMeas <- renderTable(RefVSMeas$Correlation_coefficients)
     
     #TAB 4
     output$multPlot <- renderPlotly({
