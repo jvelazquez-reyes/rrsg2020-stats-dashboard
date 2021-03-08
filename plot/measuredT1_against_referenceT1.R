@@ -3,7 +3,7 @@ measuredT1_against_referenceT1 <- function(scans){
   stdSites <- data.frame()
   mseSites <- data.frame()
   rmseSites <- data.frame()
-  correlations <- data.frame(ICC=as.numeric(), R=as.numeric(), Lin=as.numeric())
+  correlations <- data.frame(Site=as.numeric(), ICC=as.numeric(), R=as.numeric(), Lin=as.numeric())
   dispersionList = list()
   BAList = list()
   stdList = list()
@@ -78,9 +78,10 @@ measuredT1_against_referenceT1 <- function(scans){
     #Lin's concordance correlation coefficient
     Lin_test = epi.ccc(data2coef[,1], data2coef[,2])
     
-    correlations[j,1] = icc_test[7]
-    correlations[j,2] = Pearson_test[1,2]
-    correlations[j,3] = Lin_test[[1]][1]
+    correlations[j,1] = id
+    correlations[j,2] = icc_test[7]
+    correlations[j,3] = Pearson_test[1,2]
+    correlations[j,4] = Lin_test[[1]][1]
     
     #PLOTS
     #Dispersion

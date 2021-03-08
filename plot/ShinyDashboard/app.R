@@ -109,8 +109,8 @@ ui <- navbarPage("T1 mapping challenge statistics", theme = shinytheme("flatly")
                                      multiple = FALSE
                                  ),
                                  
-                                 #h2("Correlation coefficients"),
-                                 #tableOutput(outputId = "PearsonCorr"),
+                                 h2("Correlation coefficients"),
+                                 tableOutput(outputId = "CorrRefMeas"),
                                  
                                  helpText("Mathieu, B., et al. MathieuPaperName")
                          ),
@@ -120,8 +120,6 @@ ui <- navbarPage("T1 mapping challenge statistics", theme = shinytheme("flatly")
                              plotlyOutput(outputId = "BAPlot"),
                              h3("Correlation analysis"),
                              plotlyOutput(outputId = "CorrRefMeasPlot"),
-                             h3("Correlation coefficients"),
-                             tableOutput(outputId = "CorrRefMeas")
                          )
                      )
                  ),
@@ -133,7 +131,7 @@ ui <- navbarPage("T1 mapping challenge statistics", theme = shinytheme("flatly")
                                   selectizeInput(
                                       inputId = "SitesID", 
                                       label = "Select a site", 
-                                      choices = unique(stats$test$sid),
+                                      choices = unique(RefVSMeas$test$sid),
                                       selected = "1.001",
                                       multiple = TRUE
                                   )
@@ -299,7 +297,7 @@ server <- function(input, output) {
     output$multPlot <- renderPlotly({
         #req(input$SitesID)
         #if (identical(input$SitesID, "")) return(NULL)
-        plot_ly(stats$test, x = ~sph, y = ~stdValues, split = ~sid) %>%
+        plot_ly(RefVSMeas$test, x = ~sph, y = ~stdValues, split = ~sid) %>%
             filter(sid %in% input$SitesID) %>%
             #group_by(sid) %>%
             add_lines()
@@ -307,7 +305,7 @@ server <- function(input, output) {
     #output$multPlot <- renderPlotly({
     #    req(input$SitesID)
     #    if (identical(input$SitesID, "")) return(NULL)
-    #    multPlot <- ggplot(stats$test, aes(x = stats$test$sph, y = stats$test$stdValues)) +
+    #    multPlot <- ggplot(RefVSMeas$test, aes(x = RefVSMeas$test$sph, y = RefVSMeas$test$stdValues)) +
     #        geom_line(size = 1.5) +
     #        scale_colour_manual(values = c("darkred", "blue", "dark green", "red"))
     #    ggplotly(multPlot)
@@ -316,10 +314,10 @@ server <- function(input, output) {
     #TAB 5
     output$distPlot2 <- renderPlotly({
         if (input$typeplot2 == "Standard Deviation"){
-            plotType2 <- stats$STD
+            plotType2 <- RefVSMeas$STD
         }
         if (input$typeplot2 == "Root Mean Square Error"){
-            plotType2 <- stats$RMSE
+            plotType2 <- RefVSMeas$RMSE
         }
         plot12 = plotType2[[1]]
         plot22 = plotType2[[2]]
