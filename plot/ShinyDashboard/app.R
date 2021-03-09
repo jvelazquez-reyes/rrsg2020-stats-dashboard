@@ -194,7 +194,11 @@ server <- function(input, output) {
         
     output$CorrMagComp <- renderPlotly({
         p <- ggplot(data = filter(magVScomp$dataCorr, sid %in% input$CorrSitesID)) +
-            geom_point(aes(x = Complex, y = Magnitude), color = "black", size = 1.5) +
+            geom_point(aes(x = Complex, y = Magnitude,
+                           text = paste('<br> Complex: ', Complex,
+                                        '<br> Magnitude: ', Magnitude,
+                                        '<br> Sphere: ', sph)),
+                       color = "black", size = 1.5) +
             labs(x = "Complex T1 value (ms)", y = "Magnitude T1 value (ms)") +
             geom_smooth(aes(x = Complex, y = Magnitude), method = "lm", se = TRUE, color = "red", lwd = 0.5) +
             geom_abline(intercept = 0, slope = 1, lwd = 0.7, col = "blue") +
@@ -207,7 +211,7 @@ server <- function(input, output) {
                                axis.title = element_text(size = 12),
                                axis.text = element_text(size = 12))
         
-        ggplotly(p)
+        ggplotly(p, tooltip = "text")
     })
     
     output$PearsonCorr <- renderTable(magVScomp$PearsonCorr)
@@ -243,7 +247,11 @@ server <- function(input, output) {
     #TAB 3
     output$BAPlot <- renderPlotly({
         p <- ggplot(data = filter(RefVSMeas$BAData, sid %in% input$RefMeasSitesID)) +
-            geom_point(aes(x = average, y = difference), pch = 1, size = 1.5, col = "black") +
+            geom_point(aes(x = average, y = difference,
+                           text = paste('<br> Average: ', average,
+                                        '<br> Difference: ', difference,
+                                        '<br> Sphere: ', sph)), 
+                       pch = 1, size = 1.5, col = "black") +
             labs(x = "Average T1 (ms)", 
                  y = "Measured - Reference") +
             geom_smooth(aes(x = average, y = difference), method = "lm", se = TRUE, fill = "lightgrey", lwd = 0.1, lty = 5) +
@@ -271,12 +279,16 @@ server <- function(input, output) {
             theme_bw() + theme(plot.title = element_text(size = 14, face = "bold", hjust = 0.5),
                                axis.title = element_text(size = 12),
                                axis.text = element_text(size = 12))
-        ggplotly(p)
+        ggplotly(p, tooltip = "text")
     })
     
     output$CorrRefMeasPlot <- renderPlotly({
         p <- ggplot(data = filter(RefVSMeas$BAData, sid %in% input$RefMeasSitesID)) +
-            geom_point(aes(x = reference, y = measValue), color = "black", size = 1.5) +
+            geom_point(aes(x = reference, y = measValue,
+                           text = paste('<br> Measured Value: ', signif(measValue,6),
+                                        '<br> Reference Value: ', signif(reference,6),
+                                        '<br> Sphere: ', sph)),
+                       color = "black", size = 1.5) +
             labs(x = "Reference T1 value (ms)", y = "Measured T1 value (ms)") +
             geom_smooth(aes(x = reference, y = measValue), method = "lm", se = TRUE, color = "red", lwd = 0.5) +
             geom_abline(intercept = 0, slope = 1, lwd = 0.7, col = "blue") +
@@ -288,7 +300,7 @@ server <- function(input, output) {
             theme_bw() + theme(plot.title = element_text(size = 14, face = "bold", hjust = 0.5),
                                axis.title = element_text(size = 12),
                                axis.text = element_text(size = 12))
-        ggplotly(p)
+        ggplotly(p, tooltip = "text")
     })
     
     output$CorrRefMeas <- renderTable(RefVSMeas$Correlation_coefficients)
