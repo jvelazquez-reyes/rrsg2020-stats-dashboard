@@ -9,6 +9,10 @@ path_to_CSVfile = "D:\\acer\\Documents\\PhD application\\Polymtl\\Internship2020
 path_to_src = "D:\\acer\\Documents\\PhD application\\Polymtl\\Internship2020\\rrsg2020-stats-dashboard\\plot\\"
 path_to_python = "D:\\Instalaciones\\Anaconda\\Anaconda3"
 
+##Call Python script from R##
+use_python(path_to_python, required=T)
+source_python(paste(path_to_src, "nist.py", sep = ""))
+
 data <- read.csv(paste(path_to_CSVfile, "3T_NIST_T1maps_database.csv", sep = ""))
 data[] <- gsub("[][]", "", as.matrix(data))
 
@@ -42,10 +46,6 @@ Germany <- 13:26
 
 SiteUS <- comparison_across_sites(US)
 SiteGermany <- comparison_across_sites(Germany)
-
-##Call Python script from R##
-use_python(path_to_python, required=T)
-source_python(paste(path_to_src, "nist.py", sep = ""))
 
 ##COMPARISON BETWEEN MEASURED AND REFERENCE T1 VALUES##
 source(paste(path_to_src, "measuredT1_against_referenceT1.R", sep = ""))

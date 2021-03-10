@@ -14,24 +14,27 @@ comparison_across_sites <- function(site){
       
     }
     
+    phantomTemperature = as.numeric(data[j,"phantom.temperature"])
+    phantomVersion = as.numeric(data[j,"phantom.version"])
+    if (phantomVersion<42){
+      refTemp = temperature_correction(phantomTemperature,phantomVersion)
+    } else {
+      refTemp = temperature_correction(phantomTemperature,phantomVersion)
+    }
+    
     id = data[site[j],"id"]
     sid <- as.matrix(rep(id,14))
     sph <- as.matrix(1:14)
+    temp <- as.matrix(refTemp)
     
-    data_Site <- data.frame(sid, sph, meanSite[,j])
+    data_Site <- data.frame(sid, sph, temp, meanSite[,j])
     
     if (j==1){
       dataTmp = rbind(data.frame(), data_Site)
-      #corrTmp = rbind(data.frame(), corr_Mag_Comp)
-      #PearsonTmp = rbind(data.frame(), Pearson_test)
     }
     else{
       dataSite2plot = rbind(dataTmp, data_Site)
-      #dataCorrelation = rbind(corrTmp, corr_Mag_Comp)
-      #dataPearson = rbind(PearsonTmp, Pearson_test)
       dataTmp <- dataSite2plot
-      #corrTmp <- dataCorrelation
-      #PearsonTmp <- dataPearson
     }
   }
   
@@ -59,7 +62,7 @@ comparison_across_sites <- function(site){
     multComparisons[j] = TukeyHSD(res.aov)
   }
   
-  colnames(dataSite2plot) <- c('Site', 'Sphere', 'Mean')
+  colnames(dataSite2plot) <- c('Site', 'Sphere', 'refTemp', 'Mean')
   
   returnComparison <- list("dataSite" = dataSite2plot,
                            "ANOVA" = multComparisons)

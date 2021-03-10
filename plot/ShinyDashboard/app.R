@@ -169,24 +169,24 @@ server <- function(input, output) {
     MagCom_colors <- setNames(rainbow(nrow(magVScomp$dataMagComp)), magVScomp$dataMagComp$sid)
     output$MagComp <- renderPlotly({
         if (input$typeComparison == "Difference"){
-            plot_ly(magVScomp$dataMagComp, x = ~sph, y = ~diff, split = ~sid, color = ~sid, colors = MagCom_colors) %>%
+            plot_ly(magVScomp$dataMagComp, x = ~refTemp, y = ~diff, split = ~sid, color = ~sid, colors = MagCom_colors) %>%
                 filter(sid %in% input$DiffSitesID) %>%
                 group_by(sid) %>%
                 add_trace(type = 'scatter', mode = 'lines+markers',
                           hoverinfo = 'text',
                           text = ~paste('<br> Site: ', sid,
-                                        '<br> Difference: ', diff,
+                                        '<br> Difference: ', signif(diff,3),
                                         '<br> Sphere: ', sph)) %>%
                 layout(xaxis = list(title = "Reference Temperature (°C)"), yaxis = list(title = "Absolute T1 difference (ms)"))
         }
         else if (input$typeComparison == "Difference (%)"){
-            plot_ly(magVScomp$dataMagComp, x = ~sph, y = ~percDiff, split = ~sid, color = ~sid, colors = MagCom_colors) %>%
+            plot_ly(magVScomp$dataMagComp, x = ~refTemp, y = ~percDiff, split = ~sid, color = ~sid, colors = MagCom_colors) %>%
                 filter(sid %in% input$DiffSitesID) %>%
                 #group_by(sid) %>%
                 add_trace(type = 'scatter', mode = 'lines+markers',
                           hoverinfo = 'text',
                           text = ~paste('<br> Site: ', sid,
-                                        '<br> Difference (%): ', percDiff,
+                                        '<br> Difference (%): ', signif(percDiff,4),
                                         '<br> Sphere: ', sph)) %>%
                 layout(xaxis = list(title = "Reference Temperature (°C)"), yaxis = list(title = "Percentual T1 difference (%)"))
         }
@@ -195,8 +195,8 @@ server <- function(input, output) {
     output$CorrMagComp <- renderPlotly({
         p <- ggplot(data = filter(magVScomp$dataCorr, sid %in% input$CorrSitesID)) +
             geom_point(aes(x = Complex, y = Magnitude,
-                           text = paste('<br> Complex: ', Complex,
-                                        '<br> Magnitude: ', Magnitude,
+                           text = paste('<br> Complex: ', signif(Complex,5),
+                                        '<br> Magnitude: ', signif(Magnitude,5),
                                         '<br> Sphere: ', sph)),
                        color = "black", size = 1.5) +
             labs(x = "Complex T1 value (ms)", y = "Magnitude T1 value (ms)") +
@@ -219,26 +219,26 @@ server <- function(input, output) {
     #TAB 2
     US_colors <- setNames(rainbow(nrow(SiteUS$dataSite)), SiteUS$dataSite$Site)
     output$CompUS <- renderPlotly({
-        plot_ly(SiteUS$dataSite, x = ~Sphere, y = ~Mean, split = ~Site, color = ~Site, colors = US_colors) %>%
+        plot_ly(SiteUS$dataSite, x = ~refTemp, y = ~Mean, split = ~Site, color = ~Site, colors = US_colors) %>%
             filter(Site %in% input$SiteUSID) %>%
             #group_by(sid) %>%
             add_trace(type = 'scatter', mode = 'lines+markers',
                       hoverinfo = 'text',
                       text = ~paste('<br> Site: ', Site,
-                                    '<br> Mean: ', Mean,
+                                    '<br> Mean: ', signif(Mean,5),
                                     '<br> Sphere: ', Sphere)) %>%
             layout(xaxis = list(title = "Reference Temperature (°C)"), yaxis = list(title = "T1 value (ms)"))
     })
     
     Germany_colors <- setNames(rainbow(nrow(SiteGermany$dataSite)), SiteGermany$dataSite$Site)
     output$CompGermany <- renderPlotly({
-        plot_ly(SiteGermany$dataSite, x = ~Sphere, y = ~Mean, split = ~Site, color = ~Site, colors = Germany_colors) %>%
+        plot_ly(SiteGermany$dataSite, x = ~refTemp, y = ~Mean, split = ~Site, color = ~Site, colors = Germany_colors) %>%
             filter(Site %in% input$SiteGermanyID) %>%
             #group_by(sid) %>%
             add_trace(type = 'scatter', mode = 'lines+markers',
                       hoverinfo = 'text',
                       text = ~paste('<br> Site: ', Site,
-                                    '<br> Mean: ', Mean,
+                                    '<br> Mean: ', signif(Mean,5),
                                     '<br> Sphere: ', Sphere)) %>%
             layout(xaxis = list(title = "Reference Temperature (°C)"), yaxis = list(title = "T1 value (ms)"))
     })
@@ -248,8 +248,8 @@ server <- function(input, output) {
     output$BAPlot <- renderPlotly({
         p <- ggplot(data = filter(RefVSMeas$BAData, sid %in% input$RefMeasSitesID)) +
             geom_point(aes(x = average, y = difference,
-                           text = paste('<br> Average: ', average,
-                                        '<br> Difference: ', difference,
+                           text = paste('<br> Average: ', signif(average,5),
+                                        '<br> Difference: ', signif(difference,4),
                                         '<br> Sphere: ', sph)), 
                        pch = 1, size = 1.5, col = "black") +
             labs(x = "Average T1 (ms)", 
