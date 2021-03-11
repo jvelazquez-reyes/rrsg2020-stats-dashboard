@@ -131,7 +131,7 @@ ui <- navbarPage("T1 mapping challenge statistics", theme = shinytheme("flatly")
                                   selectizeInput(
                                       inputId = "SitesID", 
                                       label = "Select a site", 
-                                      choices = unique(RefVSMeas$test$sid),
+                                      choices = unique(RefVSMeas$stdData$sid),
                                       selected = "1.001",
                                       multiple = TRUE
                                   )
@@ -148,15 +148,25 @@ ui <- navbarPage("T1 mapping challenge statistics", theme = shinytheme("flatly")
                  tabPanel("Bias",
                           sidebarLayout(
                               sidebarPanel(
-                                  radioButtons(inputId = "typeplot2",
+                                  selectizeInput(
+                                      inputId = "biasSitesID", 
+                                      label = "Select a site", 
+                                      choices = unique(RefVSMeas$stdData$sid),
+                                      #selected = "1.001",
+                                      multiple = TRUE
+                                  ),
+                                  
+                                  radioButtons(inputId = "typeBiasPlot",
                                                label = "Choose the type of plot to display",
                                                choices = c("Standard Deviation", "Root Mean Square Error"),
-                                               selected = "Standard Deviation")
+                                               selected = "Standard Deviation"),
+                                  
+                                  helpText("Mathieu, B., et al. MathieuPaperName")
                               ),
                               
                               mainPanel(
                                   h3("Plots"),
-                                  plotlyOutput(outputId = "distPlot2")
+                                  plotlyOutput(outputId = "biasPlots")
                               )
                           ))
     
@@ -309,7 +319,7 @@ server <- function(input, output) {
     output$multPlot <- renderPlotly({
         #req(input$SitesID)
         #if (identical(input$SitesID, "")) return(NULL)
-        plot_ly(RefVSMeas$test, x = ~sph, y = ~stdValues, split = ~sid) %>%
+        plot_ly(RefVSMeas$stdData, x = ~sph, y = ~stdValues, split = ~sid) %>%
             filter(sid %in% input$SitesID) %>%
             #group_by(sid) %>%
             add_lines()
@@ -324,18 +334,30 @@ server <- function(input, output) {
     #})
     
     #TAB 5
-    output$distPlot2 <- renderPlotly({
-        if (input$typeplot2 == "Standard Deviation"){
-            plotType2 <- RefVSMeas$STD
+    Bias_colors <- setNames(rainbow(nrow(RefVSMeas$stdData)), RefVSMeas$stdData$sid)
+    output$biasPlots <- renderPlotly({
+        if (input$typeBiasPlot == "Standard Deviation"){
+            plot_ly(RefVSMeas$stdData, x = ~refTemp, y = ~stdValues, split = ~sid, color = ~sid, colors = Bias_colors) %>%
+                filter(sid %in% input$biasSitesID) %>%
+                #group_by(sid) %>%
+                add_trace(type = 'scatter', mode = 'lines+markers',
+                          hoverinfo = 'text',
+                          text = ~paste('<br> Site: ', sid,
+                                        '<br> SD: ', signif(stdValues,3),
+                                        '<br> Sphere: ', sph)) %>%
+                layout(xaxis = list(title = "Reference Temperature (°C)"), yaxis = list(title = "Standard Deviation (ms)"))
         }
-        if (input$typeplot2 == "Root Mean Square Error"){
-            plotType2 <- RefVSMeas$RMSE
+        else if (input$typeBiasPlot == "Root Mean Square Error"){
+            plot_ly(RefVSMeas$rmseData, x = ~refTemp, y = ~rmseValues, split = ~sid, color = ~sid, colors = Bias_colors) %>%
+                filter(sid %in% input$biasSitesID) %>%
+                #group_by(sid) %>%
+                add_trace(type = 'scatter', mode = 'lines+markers',
+                          hoverinfo = 'text',
+                          text = ~paste('<br> Site: ', sid,
+                                        '<br> RMSE (%): ', signif(rmseValues,4),
+                                        '<br> Sphere: ', sph)) %>%
+                layout(xaxis = list(title = "Reference Temperature (°C)"), yaxis = list(title = "RMSE (ms)"))
         }
-        plot12 = plotType2[[1]]
-        plot22 = plotType2[[2]]
-        plot32 = plotType2[[3]]
-        plot42 = plotType2[[4]]
-        subplot(list(plot12,plot22,plot32,plot42), nrows = 2, margin = 0.06, shareX = T, shareY = T)
     })
 }
 
