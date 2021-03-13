@@ -2,6 +2,7 @@ library("reticulate")
 library("Metrics")
 library("ggplot2")
 library("epiR")
+library("lme4")
 library("irr")
 library("plotly")
 

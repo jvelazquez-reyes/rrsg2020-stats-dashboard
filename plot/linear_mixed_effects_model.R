@@ -8,18 +8,32 @@ linear_mixed_effects_model <- function(sites){
   list2append = list()
   count <- 1
   for (i in submission){
+    phantomTemperature = as.numeric(data[i,"phantom.temperature"])
+    phantomVersion = as.numeric(data[i,"phantom.version"])
+    if (phantomVersion<42){
+      refT1 = temperature_correction(phantomTemperature,phantomVersion)
+    } else {
+      refT1 = temperature_correction(phantomTemperature,phantomVersion)
+    }
+    
+    id = data[i,"id"]
+    dType = data[i,"Data.type"]
+    vendor = data[i,"MRI.vendor"]
+    version = data[i,"MRI.version"]
+    
     for (j in seq(1,14)){
       dataSphere = gsub("\\. ","",data[i,j+grep("^T1...NIST.sphere.1$", colnames(data))-1])
       dataSphere = as.matrix(as.numeric(unlist(strsplit(dataSphere," "))))
       dataSphere = dataSphere[!is.na(dataSphere)]
       
-      phantomTemperature = as.numeric(data[j,"phantom.temperature"])
-      phantomVersion = as.numeric(data[j,"phantom.version"])
-      id = data[i,"id"]
       sid <- as.matrix(rep(id,length(dataSphere)))
-      sphere <- as.matrix(j,length(dataSphere))
+      sphere <- as.matrix(rep(j,length(dataSphere)))
+      t1ref <- as.matrix(rep(refT1[j],length(dataSphere)))
+      dataType <- as.matrix(rep(dType,length(dataSphere)))
+      MRIvendor <- as.matrix(rep(vendor,length(dataSphere)))
+      MRIversion <- as.matrix(rep(version,length(dataSphere)))
       
-      dataLong <- data.frame(sid, sphere, dataSphere)
+      dataLong <- data.frame(sid, sphere, t1ref, dataSphere, dataType, MRIvendor, MRIversion)
       
       #Long format data frame
       if (count==1){
@@ -32,5 +46,10 @@ linear_mixed_effects_model <- function(sites){
       count = count + 1
     }
   }
-  return(lmeData)
+  
+  dataLong$sid <- as.factor(dataLong$sid)
+  dataLong$MRIversion <- as.factor(dataLong$MRIversion)
+  firstLME <- lmer(dataSphere ~ t1ref + MRIversion + (1|sid), data = dataLong)
+  returnLME <- list("dataLME" = dataLong)
+  return(returnLME)
 }
