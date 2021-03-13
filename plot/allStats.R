@@ -53,9 +53,6 @@ source(paste(path_to_src, "measuredT1_against_referenceT1.R", sep = ""))
 scans <- 1:4
 RefVSMeas <- measuredT1_against_referenceT1(scans)
 
-
-#dispersionList[[2]]
-#BAList[[1]]
-#stdList[[1]]
-#rmseList[[1]]
-
+##LINEAR MIXED EFFECTS MODEL##
+sites <- 1:6
+sitesLMEM <- linear_mixed_effects_model(sites)
