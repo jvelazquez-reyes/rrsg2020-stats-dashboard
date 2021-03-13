@@ -179,7 +179,7 @@ server <- function(input, output) {
     MagCom_colors <- setNames(rainbow(nrow(magVScomp$dataMagComp)), magVScomp$dataMagComp$sid)
     output$MagComp <- renderPlotly({
         if (input$typeComparison == "Difference"){
-            plot_ly(magVScomp$dataMagComp, x = ~refTemp, y = ~diff, split = ~sid, color = ~sid, colors = MagCom_colors) %>%
+            plot_ly(magVScomp$dataMagComp, x = ~refT1, y = ~diff, split = ~sid, color = ~sid, colors = MagCom_colors) %>%
                 filter(sid %in% input$DiffSitesID) %>%
                 group_by(sid) %>%
                 add_trace(type = 'scatter', mode = 'lines+markers',
@@ -187,10 +187,10 @@ server <- function(input, output) {
                           text = ~paste('<br> Site: ', sid,
                                         '<br> Difference: ', signif(diff,3),
                                         '<br> Sphere: ', sph)) %>%
-                layout(xaxis = list(title = "Reference Temperature (°C)"), yaxis = list(title = "Absolute T1 difference (ms)"))
+                layout(xaxis = list(title = "Reference T1 value (ms)"), yaxis = list(title = "Absolute T1 difference (ms)"))
         }
         else if (input$typeComparison == "Difference (%)"){
-            plot_ly(magVScomp$dataMagComp, x = ~refTemp, y = ~percDiff, split = ~sid, color = ~sid, colors = MagCom_colors) %>%
+            plot_ly(magVScomp$dataMagComp, x = ~refT1, y = ~percDiff, split = ~sid, color = ~sid, colors = MagCom_colors) %>%
                 filter(sid %in% input$DiffSitesID) %>%
                 #group_by(sid) %>%
                 add_trace(type = 'scatter', mode = 'lines+markers',
@@ -198,19 +198,20 @@ server <- function(input, output) {
                           text = ~paste('<br> Site: ', sid,
                                         '<br> Difference (%): ', signif(percDiff,4),
                                         '<br> Sphere: ', sph)) %>%
-                layout(xaxis = list(title = "Reference Temperature (°C)"), yaxis = list(title = "Percentual T1 difference (%)"))
+                layout(xaxis = list(title = "Reference T1 value (ms)"), yaxis = list(title = "Percentual T1 difference (%)"))
         }
     })
         
     output$CorrMagComp <- renderPlotly({
         p <- ggplot(data = filter(magVScomp$dataCorr, sid %in% input$CorrSitesID)) +
             geom_point(aes(x = Complex, y = Magnitude,
-                           text = paste('<br> Complex: ', signif(Complex,5),
+                           text = paste0('<br> Complex: ', signif(Complex,5),
                                         '<br> Magnitude: ', signif(Magnitude,5),
                                         '<br> Sphere: ', sph)),
                        color = "black", size = 1.5) +
             labs(x = "Complex T1 value (ms)", y = "Magnitude T1 value (ms)") +
-            geom_smooth(aes(x = Complex, y = Magnitude), method = "lm", se = TRUE, color = "red", lwd = 0.5) +
+            geom_smooth(aes(x = Complex, y = Magnitude), method = "lm", se = TRUE, color = "red", lwd = 0.5,
+                        text = paste('<br> Confidence intervals: ')) +
             geom_abline(intercept = 0, slope = 1, lwd = 0.7, col = "blue") +
             theme(axis.line = element_line(colour = "black"), 
                   panel.grid.major = element_blank(), 
@@ -229,7 +230,7 @@ server <- function(input, output) {
     #TAB 2
     US_colors <- setNames(rainbow(nrow(SiteUS$dataSite)), SiteUS$dataSite$Site)
     output$CompUS <- renderPlotly({
-        plot_ly(SiteUS$dataSite, x = ~refTemp, y = ~Mean, split = ~Site, color = ~Site, colors = US_colors) %>%
+        plot_ly(SiteUS$dataSite, x = ~refT1, y = ~Mean, split = ~Site, color = ~Site, colors = US_colors) %>%
             filter(Site %in% input$SiteUSID) %>%
             #group_by(sid) %>%
             add_trace(type = 'scatter', mode = 'lines+markers',
@@ -237,12 +238,12 @@ server <- function(input, output) {
                       text = ~paste('<br> Site: ', Site,
                                     '<br> Mean: ', signif(Mean,5),
                                     '<br> Sphere: ', Sphere)) %>%
-            layout(xaxis = list(title = "Reference Temperature (°C)"), yaxis = list(title = "T1 value (ms)"))
+            layout(xaxis = list(title = "Reference T1 value (ms)"), yaxis = list(title = "T1 value (ms)"))
     })
     
     Germany_colors <- setNames(rainbow(nrow(SiteGermany$dataSite)), SiteGermany$dataSite$Site)
     output$CompGermany <- renderPlotly({
-        plot_ly(SiteGermany$dataSite, x = ~refTemp, y = ~Mean, split = ~Site, color = ~Site, colors = Germany_colors) %>%
+        plot_ly(SiteGermany$dataSite, x = ~refT1, y = ~Mean, split = ~Site, color = ~Site, colors = Germany_colors) %>%
             filter(Site %in% input$SiteGermanyID) %>%
             #group_by(sid) %>%
             add_trace(type = 'scatter', mode = 'lines+markers',
@@ -250,7 +251,7 @@ server <- function(input, output) {
                       text = ~paste('<br> Site: ', Site,
                                     '<br> Mean: ', signif(Mean,5),
                                     '<br> Sphere: ', Sphere)) %>%
-            layout(xaxis = list(title = "Reference Temperature (°C)"), yaxis = list(title = "T1 value (ms)"))
+            layout(xaxis = list(title = "Reference T1 value (ms)"), yaxis = list(title = "T1 value (ms)"))
     })
     
     
@@ -337,7 +338,7 @@ server <- function(input, output) {
     Bias_colors <- setNames(rainbow(nrow(RefVSMeas$stdData)), RefVSMeas$stdData$sid)
     output$biasPlots <- renderPlotly({
         if (input$typeBiasPlot == "Standard Deviation"){
-            plot_ly(RefVSMeas$stdData, x = ~refTemp, y = ~stdValues, split = ~sid, color = ~sid, colors = Bias_colors) %>%
+            plot_ly(RefVSMeas$stdData, x = ~refT1, y = ~stdValues, split = ~sid, color = ~sid, colors = Bias_colors) %>%
                 filter(sid %in% input$biasSitesID) %>%
                 #group_by(sid) %>%
                 add_trace(type = 'scatter', mode = 'lines+markers',
@@ -345,10 +346,10 @@ server <- function(input, output) {
                           text = ~paste('<br> Site: ', sid,
                                         '<br> SD: ', signif(stdValues,3),
                                         '<br> Sphere: ', sph)) %>%
-                layout(xaxis = list(title = "Reference Temperature (°C)"), yaxis = list(title = "Standard Deviation (ms)"))
+                layout(xaxis = list(title = "Reference T1 value (ms)"), yaxis = list(title = "Standard Deviation (ms)"))
         }
         else if (input$typeBiasPlot == "Root Mean Square Error"){
-            plot_ly(RefVSMeas$rmseData, x = ~refTemp, y = ~rmseValues, split = ~sid, color = ~sid, colors = Bias_colors) %>%
+            plot_ly(RefVSMeas$rmseData, x = ~refT1, y = ~rmseValues, split = ~sid, color = ~sid, colors = Bias_colors) %>%
                 filter(sid %in% input$biasSitesID) %>%
                 #group_by(sid) %>%
                 add_trace(type = 'scatter', mode = 'lines+markers',
@@ -356,7 +357,7 @@ server <- function(input, output) {
                           text = ~paste('<br> Site: ', sid,
                                         '<br> RMSE (%): ', signif(rmseValues,4),
                                         '<br> Sphere: ', sph)) %>%
-                layout(xaxis = list(title = "Reference Temperature (°C)"), yaxis = list(title = "RMSE (ms)"))
+                layout(xaxis = list(title = "Reference T1 value (ms)"), yaxis = list(title = "RMSE (ms)"))
         }
     })
 }

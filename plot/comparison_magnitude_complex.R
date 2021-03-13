@@ -39,22 +39,22 @@ comparison_magnitude_complex <- function(cases,listSpheres){
     phantomTemperature = as.numeric(data[j,"phantom.temperature"])
     phantomVersion = as.numeric(data[j,"phantom.version"])
     if (phantomVersion<42){
-      refTemp = temperature_correction(phantomTemperature,phantomVersion)
+      refT1 = temperature_correction(phantomTemperature,phantomVersion)
     } else {
-      refTemp = temperature_correction(phantomTemperature,phantomVersion)
+      refT1 = temperature_correction(phantomTemperature,phantomVersion)
     }
     
     id = data[cases[j],"id"]
     sid <- as.matrix(rep(id,14))
     sph <- as.matrix(1:14)
-    temp <- as.matrix(refTemp)
+    t1 <- as.matrix(refT1)
     
     ##CORRELATION ANALYSIS
     corrTest <- cor.test(meanMag[,j], meanComp[,j], method = 'pearson')
     Pearson_test <- data.frame(id, corrTest$estimate, corrTest$p.value)
     
     #DIFFERENCE AND PERCENTAGE DIFFERENCE
-    data_Mag_Comp <- data.frame(sid, sph, temp, diff_Mag_Comp[,j], diff_Perc_Mag_Comp[,j])
+    data_Mag_Comp <- data.frame(sid, sph, t1, diff_Mag_Comp[,j], diff_Perc_Mag_Comp[,j])
     corr_Mag_Comp <- data.frame(sid, sph, meanMag[,j], meanComp[,j])
     
     if (j==1){
@@ -72,7 +72,7 @@ comparison_magnitude_complex <- function(cases,listSpheres){
     }
   }
   
-  colnames(dataComparison) <- c('sid', 'sph', 'refTemp', 'diff', 'percDiff')
+  colnames(dataComparison) <- c('sid', 'sph', 'refT1', 'diff', 'percDiff')
   colnames(dataCorrelation) <- c('sid', 'sph', 'Magnitude', 'Complex')
   colnames(dataPearson) <- c('Site', 'R', 'p-Value')
   

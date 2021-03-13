@@ -22,16 +22,16 @@ measuredT1_against_referenceT1 <- function(scans){
     id = data[j,"id"]
     
     if (phantomVersion<42){
-      refTemp = temperature_correction(phantomTemperature,phantomVersion)
+      refT1 = temperature_correction(phantomTemperature,phantomVersion)
     } else {
-      refTemp = temperature_correction(phantomTemperature,phantomVersion)
+      refT1 = temperature_correction(phantomTemperature,phantomVersion)
     }
     
     for (k in seq(1,14)){
       measuredT1 = as.numeric(unlist(listSpheres[[j]][k]))
       meanSites[k,j] = mean(measuredT1)
       stdSites[k,j] = sd(measuredT1)
-      rmseSites[k,j] = rmse(measuredT1, rep(refTemp[k],length(measuredT1)))
+      rmseSites[k,j] = rmse(measuredT1, rep(refT1[k],length(measuredT1)))
     }
     
     sid <- as.matrix(rep(id,14))
@@ -39,7 +39,7 @@ measuredT1_against_referenceT1 <- function(scans){
     
     #Bland-Altman analysis
     measValue <- meanSites[,j]
-    reference <- refTemp
+    reference <- refT1
     difference <- measValue - reference
     average <- (measValue + reference)/2
     BA2plot <- data.frame(sid, sph, measValue, reference, difference, average)
@@ -47,11 +47,11 @@ measuredT1_against_referenceT1 <- function(scans){
     #STD
 
     stdValues <- stdSites[,j]
-    std2plot <- data.frame(sid, sph, refTemp, stdValues)
+    std2plot <- data.frame(sid, sph, refT1, stdValues)
     
     #RMSE
     rmseValues <- rmseSites[,j]
-    rmse2plot <- data.frame(sid, sph, refTemp, rmseValues)
+    rmse2plot <- data.frame(sid, sph, refT1, rmseValues)
     
     #Long format data frame
     if (j==scans[1]){
@@ -133,7 +133,7 @@ measuredT1_against_referenceT1 <- function(scans){
     BAList[[j]] = ggplotly(p)
     
     #STD
-    p = ggplot(data = std2plot, aes(x = refTemp, y = stdValues)) +
+    p = ggplot(data = std2plot, aes(x = refT1, y = stdValues)) +
       geom_point(color = "black", size = 1.5) +
       labs(title = paste("Site ID:", id, sep = ""), x = "Reference T1 (ms)", y = "SD (ms)") +
       theme(axis.line = element_line(colour = "black"), 
@@ -147,7 +147,7 @@ measuredT1_against_referenceT1 <- function(scans){
     stdList[[j]] = ggplotly(p)
     
     #RMSE
-    #p = ggplot(data = rmse2plot, aes(x = refTemp, y = rmseValues)) +
+    #p = ggplot(data = rmse2plot, aes(x = refT1, y = rmseValues)) +
     #  geom_point(color = "black", size = 1.5) +
     #  labs(title = paste("Site ID:", id, sep = ""), x = "Reference T1 (ms)", y = "RMSE (ms)") +
     #  theme(axis.line = element_line(colour = "black"), 
