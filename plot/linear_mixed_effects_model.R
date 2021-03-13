@@ -6,6 +6,7 @@ linear_mixed_effects_model <- function(sites){
   submission <- 1:40
   listSpheres = list()
   list2append = list()
+  count <- 1
   for (i in submission){
     for (j in seq(1,14)){
       dataSphere = gsub("\\. ","",data[i,j+grep("^T1...NIST.sphere.1$", colnames(data))-1])
@@ -14,13 +15,22 @@ linear_mixed_effects_model <- function(sites){
       
       phantomTemperature = as.numeric(data[j,"phantom.temperature"])
       phantomVersion = as.numeric(data[j,"phantom.version"])
-      id = data[j,"id"]
+      id = data[i,"id"]
       sid <- as.matrix(rep(id,length(dataSphere)))
+      sphere <- as.matrix(j,length(dataSphere))
       
-      BA2plot <- data.frame(sid, sph, measValue, reference, difference, average)
+      dataLong <- data.frame(sid, sphere, dataSphere)
       
-      list2append[[j]] = dataSphere
+      #Long format data frame
+      if (count==1){
+        longTmp = rbind(data.frame(), dataLong)
+      }
+      else{
+        lmeData = rbind(longTmp, dataLong)
+        longTmp <- lmeData
+      }
+      count = count + 1
     }
-    listSpheres[[i]] = list2append
   }
+  return(lmeData)
 }

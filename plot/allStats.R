@@ -54,5 +54,7 @@ scans <- 1:4
 RefVSMeas <- measuredT1_against_referenceT1(scans)
 
 ##LINEAR MIXED EFFECTS MODEL##
+source(paste(path_to_src, "linear_mixed_effects_model.R", sep = ""))
+
 sites <- 1:6
 sitesLMEM <- linear_mixed_effects_model(sites)
