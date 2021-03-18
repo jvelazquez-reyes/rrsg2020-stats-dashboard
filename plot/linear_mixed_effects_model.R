@@ -3,11 +3,10 @@ linear_mixed_effects_model <- function(sites){
   data <- read.csv(paste(path_to_CSVfile, "3T_NIST_T1maps_database.csv", sep = ""))
   data[] <- gsub("[][]", "", as.matrix(data))
   
-  submission <- 1:40
   listSpheres = list()
   list2append = list()
   count <- 1
-  for (i in submission){
+  for (i in sites){
     phantomTemperature = as.numeric(data[i,"phantom.temperature"])
     phantomVersion = as.numeric(data[i,"phantom.version"])
     if (phantomVersion<42){
@@ -38,18 +37,16 @@ linear_mixed_effects_model <- function(sites){
       #Long format data frame
       if (count==1){
         longTmp = rbind(data.frame(), dataLong)
+        count = count + 1
       }
       else{
         lmeData = rbind(longTmp, dataLong)
         longTmp <- lmeData
       }
-      count = count + 1
     }
   }
   
-  dataLong$sid <- as.factor(dataLong$sid)
-  dataLong$MRIversion <- as.factor(dataLong$MRIversion)
-  firstLME <- lmer(dataSphere ~ t1ref + MRIversion + (1|sid), data = dataLong)
-  returnLME <- list("dataLME" = dataLong)
+  firstLME <- lmer(dataSphere ~ t1ref + MRIversion + (1|sid), data = lmeData)
+  returnLME <- list("dataLME" = firstLME)
   return(returnLME)
 }
