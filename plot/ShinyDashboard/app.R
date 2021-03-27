@@ -53,48 +53,44 @@ ui <- navbarPage("T1 mapping challenge statistics", theme = shinytheme("flatly")
                  
                  #TAB 2
                  tabPanel("Comparison across sites",
-                          tabsetPanel(
-                          
-                                      tabPanel(sidebarLayout(
-                                          sidebarPanel(
-                                              selectizeInput(
-                                                  inputId = "SiteUSID", 
-                                                  label = "Select a site", 
-                                                  choices = unique(SiteUS$dataSite$Site),
-                                                  multiple = TRUE
-                                              ),
-                                              
-                                              helpText("Mathieu, B., et al. MathieuPaperName")
-                                              
-                                          ),
-                                          
-                                          mainPanel(
-                                              h3("US Data"),
-                                              plotlyOutput(outputId = "CompUS")
-                                          )
-                                      )
-                                      ),
-                                      tabPanel(sidebarLayout(
-                                          sidebarPanel(
-                                              selectizeInput(
-                                                  inputId = "SiteGermanyID", 
-                                                  label = "Select a site", 
-                                                  choices = unique(SiteGermany$dataSite$Site),
-                                                  multiple = TRUE
-                                              ),
-                                              
-                                              helpText("Mathieu, B., et al. MathieuPaperName")
-                                              
-                                          ),
-                                          
-                                          mainPanel(
-                                              h3("Germany Data"),
-                                              plotlyOutput(outputId = "CompGermany")
-                                          )
-                                      )
-                                      )
+                          tabsetPanel(sidebarLayout(
+                              sidebarPanel(
+                                  selectizeInput(
+                                      inputId = "SiteUSID", 
+                                      label = "Select a site", 
+                                      choices = unique(SiteUS$dataSite$Site),
+                                      multiple = TRUE
+                                  ),
+                                  
+                                  helpText("Mathieu, B., et al. MathieuPaperName")
+                                  
+                              ),
+                              
+                              mainPanel(
+                                  h3("US Data"),
+                                  plotlyOutput(outputId = "CompUS")
+                              )
                           )
-
+                          ),
+                          tabsetPanel(sidebarLayout(
+                              sidebarPanel(
+                                  selectizeInput(
+                                      inputId = "SiteGermanyID", 
+                                      label = "Select a site", 
+                                      choices = unique(SiteGermany$dataSite$Site),
+                                      multiple = TRUE
+                                  ),
+                                  
+                                  helpText("Mathieu, B., et al. MathieuPaperName")
+                                  
+                              ),
+                              
+                              mainPanel(
+                                  h3("Germany Data"),
+                                  plotlyOutput(outputId = "CompGermany")
+                              )
+                          )
+                          )
                  ),
 
                  #TAB 3
