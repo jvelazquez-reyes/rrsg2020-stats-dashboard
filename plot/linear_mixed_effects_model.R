@@ -47,6 +47,6 @@ linear_mixed_effects_model <- function(sites){
   }
   
   firstLME <- lmer(dataSphere ~ t1ref + MRIversion + (1|sid), data = lmeData)
-  returnLME <- list("dataLME" = firstLME)
+  returnLME <- list("dataLME" = lmeData)
   return(returnLME)
 }

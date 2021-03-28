@@ -164,7 +164,37 @@ ui <- navbarPage("T1 mapping challenge statistics", theme = shinytheme("flatly")
                                   h3("Plots"),
                                   plotlyOutput(outputId = "biasPlots")
                               )
-                          ))
+                          )
+                
+                ),
+                
+                #TAB 6
+                tabPanel("LMEM",
+                         sidebarLayout(
+                             sidebarPanel(
+                                 selectizeInput(
+                                     inputId = "boxPlotSite", 
+                                     label = "Select a site", 
+                                     choices = unique(sitesLMEM$dataLME$sid),
+                                     #selected = "1.001",
+                                     multiple = FALSE
+                                 ),
+                                 
+                                 radioButtons(inputId = "diagnosticLME",
+                                              label = "LME Diagnostic",
+                                              choices = c("Linearity", "Normality of Residuals"),
+                                              selected = "Linearity"),
+                                 
+                                 helpText("Mathieu, B., et al. MathieuPaperName")
+                             ),
+                             
+                             mainPanel(
+                                 h3("Linear Mixed Effects Model"),
+                                 plotlyOutput(outputId = "boxPlotLME"),
+                                 h3("Linear Mixed Effects Model Diagnostic"),
+                                 plotlyOutput(outputId = "diagLME")
+                             )
+                         ))
     
 )
 
@@ -177,7 +207,7 @@ server <- function(input, output) {
         if (input$typeComparison == "Difference"){
             plot_ly(magVScomp$dataMagComp, x = ~refT1, y = ~diff, split = ~sid, color = ~sid, colors = MagCom_colors) %>%
                 filter(sid %in% input$DiffSitesID) %>%
-                group_by(sid) %>%
+                #group_by(sid) %>%
                 add_trace(type = 'scatter', mode = 'lines+markers',
                           hoverinfo = 'text',
                           text = ~paste('<br> Site: ', sid,
@@ -356,6 +386,44 @@ server <- function(input, output) {
                 layout(xaxis = list(title = "Reference T1 value (ms)"), yaxis = list(title = "RMSE (ms)"))
         }
     })
+    
+    #TAB 6
+    output$boxPlotLME <- renderPlotly({
+        p <- ggplot(data = filter(sitesLMEM$dataLME, sid %in% input$boxPlotSite)) +
+            geom_boxplot(aes(x = sphere, y = dataSphere, fill = factor(sphere))) +
+            geom_jitter(aes(x = sphere, y = dataSphere, fill = factor(sphere),
+                        text = paste('<br> Measured Value: ', signif(dataSphere,6),
+                                     '<br> Reference Value: ', signif(t1ref,6),
+                                     '<br> Sphere: ', sphere)),
+                        position = position_nudge(x=0.4)) +
+            labs(x = "Reference T1 value (ms)", y = "Measured T1 value (ms)", color = "Sphere") +
+            scale_x_reverse() +
+            scale_x_discrete(labels = c("14"="21.35","13"="30.32","12"="42.78","11"="60.06","10"="85.35",
+                                          "9"="120.89","8"="174.70","7"="240.71","6"="341.99","5"="485.90",
+                                          "4"="692.25","3"="994.84","2"="1342.53","1"="1911.16"))
+            theme(axis.line = element_line(colour = "black"), 
+                  panel.grid.major = element_blank(), 
+                  panel.grid.minor = element_blank(), 
+                  panel.border = element_blank(), 
+                  panel.background = element_blank()) +
+            theme_classic() + theme(plot.title = element_text(size = 14, face = "bold", hjust = 0.5),
+                               axis.title = element_text(size = 12),
+                               axis.text = element_text(size = 12))
+        ggplotly(p, tooltip = "text")
+    })
+    
+    firstLME <- lmer(dataSphere ~ t1ref + MRIversion + (1|sid), data = sitesLMEM$dataLME)
+    
+    output$diagLME <- renderPlotly({
+        if (input$diagnosticLME == "Linearity"){
+            plot(fitted(firstLME),residuals(firstLME))
+        }
+        else if (input$typeBiasPlot == "Normality of Residuals"){
+            hist(residuals(firstLME))
+        }
+    })
+    
+    
 }
 
 # Run the application 
