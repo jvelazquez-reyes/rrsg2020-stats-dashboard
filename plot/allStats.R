@@ -4,6 +4,7 @@ library("ggplot2")
 library("epiR")
 library("lme4")
 library("irr")
+library("sjPlot")
 library("plotly")
 
 path_to_CSVfile = "D:\\acer\\Documents\\PhD application\\Polymtl\\Internship2020\\rrsg2020\\analysis\\databases\\"

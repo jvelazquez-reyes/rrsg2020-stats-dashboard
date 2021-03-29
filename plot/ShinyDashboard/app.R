@@ -191,8 +191,10 @@ ui <- navbarPage("T1 mapping challenge statistics", theme = shinytheme("flatly")
                              mainPanel(
                                  h3("Linear Mixed Effects Model"),
                                  plotlyOutput(outputId = "boxPlotLME"),
+                                 h3("LME Model Summary"),
+                                 htmlOutput(outputId = "summaryLME"),
                                  h3("Linear Mixed Effects Model Diagnostic"),
-                                 plotlyOutput(outputId = "diagLME")
+                                 plotOutput(outputId = "diagLME")
                              )
                          ))
     
@@ -412,13 +414,15 @@ server <- function(input, output) {
         ggplotly(p, tooltip = "text")
     })
     
-    firstLME <- lmer(dataSphere ~ t1ref + MRIversion + (1|sid), data = sitesLMEM$dataLME)
+    firstLME <- lmer(dataSphere ~ t1ref + MRIversion + (1|sid) + (1|sphere), data = sitesLMEM$dataLME)
     
-    output$diagLME <- renderPlotly({
+    output$summaryLME <- renderUI({HTML(tab_model(firstLME)$knitr)})
+    
+    output$diagLME <- renderPlot({
         if (input$diagnosticLME == "Linearity"){
             plot(fitted(firstLME),residuals(firstLME))
         }
-        else if (input$typeBiasPlot == "Normality of Residuals"){
+        else if (input$diagnosticLME == "Normality of Residuals"){
             hist(residuals(firstLME))
         }
     })
