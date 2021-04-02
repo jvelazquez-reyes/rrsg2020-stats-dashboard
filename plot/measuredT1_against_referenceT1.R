@@ -3,20 +3,14 @@ measuredT1_against_referenceT1 <- function(scans){
   stdSites <- data.frame()
   mseSites <- data.frame()
   rmseSites <- data.frame()
-  correlations <- data.frame(Site=as.numeric(), ICC=as.numeric(), R=as.numeric(), Lin=as.numeric())
+  correlations <- data.frame(Site=as.numeric(), R=as.numeric(), Lin=as.numeric())
   dispersionList = list()
   BAList = list()
   stdList = list()
   rmseList = list()
-  test <- data.frame()
-  for (j in scans){
+  for (j in seq(1,length(scans))){
     data2plot <- data.frame()
-    std2plot <- data.frame()
-    rmse2plot <- data.frame()
-    data2coef <- data.frame()
-    
-    
-    
+
     phantomTemperature = as.numeric(data[j,"phantom.temperature"])
     phantomVersion = as.numeric(data[j,"phantom.version"])
     id = data[j,"id"]
@@ -28,7 +22,7 @@ measuredT1_against_referenceT1 <- function(scans){
     }
     
     for (k in seq(1,14)){
-      measuredT1 = as.numeric(unlist(listSpheres[[j]][k]))
+      measuredT1 = as.numeric(unlist(listSpheres[[scans[j]]][k]))
       meanSites[k,j] = mean(measuredT1)
       stdSites[k,j] = sd(measuredT1)
       rmseSites[k,j] = rmse(measuredT1, rep(refT1[k],length(measuredT1)))
@@ -45,7 +39,6 @@ measuredT1_against_referenceT1 <- function(scans){
     BA2plot <- data.frame(sid, sph, measValue, reference, difference, average)
     
     #STD
-
     stdValues <- stdSites[,j]
     std2plot <- data.frame(sid, sph, refT1, stdValues)
     
@@ -54,7 +47,7 @@ measuredT1_against_referenceT1 <- function(scans){
     rmse2plot <- data.frame(sid, sph, refT1, rmseValues)
     
     #Long format data frame
-    if (j==scans[1]){
+    if (j==1){
       stdTmp = rbind(data.frame(), std2plot)
       rmseTmp = rbind(data.frame(), rmse2plot)
       BATmp = rbind(data.frame(), BA2plot)
@@ -69,9 +62,6 @@ measuredT1_against_referenceT1 <- function(scans){
     }
     
     data2coef <- data.frame(measValue, reference)
-    #ICC(1,1): It reflects the variation between 2 or more raters who measure the same group of subjects.
-    icc_test = icc(data2coef, model = "oneway", type = "agreement")
-    
     #Pearson correlation coefficient
     Pearson_test = cor(data2coef)
     
@@ -79,9 +69,8 @@ measuredT1_against_referenceT1 <- function(scans){
     Lin_test = epi.ccc(data2coef[,1], data2coef[,2])
     
     correlations[j,1] = id
-    correlations[j,2] = icc_test[7]
-    correlations[j,3] = Pearson_test[1,2]
-    correlations[j,4] = Lin_test[[1]][1]
+    correlations[j,2] = Pearson_test[1,2]
+    correlations[j,3] = Lin_test[[1]][1]
     
     #PLOTS
     #Dispersion
@@ -160,10 +149,15 @@ measuredT1_against_referenceT1 <- function(scans){
     #                     axis.text = element_text(size = 12))
     #rmseList[[j]] = ggplotly(p)
   }
+  
+  #ICC(1,1): It reflects the variation between 2 or more raters who measure the same group of subjects.
+  icc_test = icc(meanSites, model = "twoway", type = "agreement")
+  
   returnStats <- list("Correlation_coefficients" = correlations,
                      "BAData" = BAData,
                      "stdData" = stdData,
-                     "rmseData" = rmseData)
+                     "rmseData" = rmseData,
+                     "test2" = icc_test)
   return(returnStats)
   
 }
