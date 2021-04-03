@@ -4,16 +4,11 @@ measuredT1_against_referenceT1 <- function(scans){
   mseSites <- data.frame()
   rmseSites <- data.frame()
   correlations <- data.frame(Site=as.numeric(), R=as.numeric(), Lin=as.numeric())
-  dispersionList = list()
-  BAList = list()
-  stdList = list()
-  rmseList = list()
+  correlations2 <- data.frame(R=as.numeric(), Lin=as.numeric(), ICC=as.numeric())
   for (j in seq(1,length(scans))){
-    data2plot <- data.frame()
-
     phantomTemperature = as.numeric(data[j,"phantom.temperature"])
     phantomVersion = as.numeric(data[j,"phantom.version"])
-    id = data[j,"id"]
+    id = data[scans[j],"id"]
     
     if (phantomVersion<42){
       refT1 = temperature_correction(phantomTemperature,phantomVersion)
@@ -71,93 +66,21 @@ measuredT1_against_referenceT1 <- function(scans){
     correlations[j,1] = id
     correlations[j,2] = Pearson_test[1,2]
     correlations[j,3] = Lin_test[[1]][1]
-    
-    #PLOTS
-    #Dispersion
-    p = ggplot(data = data2plot, mapping = aes(x = reference, y = measValue)) +
-      geom_point(color = "black", size = 1.5) +
-      labs(x = "Reference T1 value (ms)", y = "Measured T1 value (ms)") +
-      geom_smooth(method = "lm", se = TRUE, color = "red", lwd = 0.5) +
-      geom_abline(intercept = 0, slope = 1, lwd = 0.7, col = "blue") +
-      theme(axis.line = element_line(colour = "black"), 
-            panel.grid.major = element_blank(), 
-            panel.grid.minor = element_blank(), 
-            panel.border = element_blank(), 
-            panel.background = element_blank()) +
-      theme_bw() + theme(plot.title = element_text(size = 14, face = "bold", hjust = 0.5),
-                         axis.title = element_text(size = 12),
-                         axis.text = element_text(size = 12))
-    dispersionList[[j]] = ggplotly(p)
-    
-    #Bland-Altman
-    p <- ggplot(data = data2plot, aes(x = average, y = difference)) +
-      geom_point(pch = 1, size = 1.5, col = "black") +
-      labs(title = paste("Site ID:", id, sep = ""), x = "Average T1 (ms)", 
-           y = "Measured - Reference") +
-      geom_smooth(method = "lm", se = TRUE, fill = "lightgrey", lwd = 0.1, lty = 5) +
-      ylim(mean(data2plot$difference) - 4 * sd(data2plot$difference), 
-           mean(data2plot$difference) + 4 * sd(data2plot$difference)) +
-      # Línea de bias
-      geom_hline(yintercept = mean(data2plot$difference), lwd = 1) +
-      # Línea en y=0
-      geom_hline(yintercept = 0, lty = 3, col = "grey30") +
-      # Limits of Agreement
-      geom_hline(yintercept = mean(data2plot$difference) + 
-                   1.96 * sd(data2plot$difference), 
-                 lty = 2, col = "firebrick") +
-      geom_hline(yintercept = mean(data2plot$difference) - 
-                   1.96 * sd(data2plot$difference), 
-                 lty = 2, col = "firebrick") +
-      theme(panel.grid.major = element_blank(), 
-            panel.grid.minor = element_blank()) +
-      geom_text(label = "Bias", x = 2000, y = 30, size = 3, 
-                colour = "black") +
-      geom_text(label = "+1.96SD", x = 2000, y = 190, size = 3, 
-                colour = "firebrick") +
-      geom_text(label = "-1.96SD", x = 2000, y = -110, size = 3, 
-                colour = "firebrick") +
-      theme_bw() + theme(plot.title = element_text(size = 14, face = "bold", hjust = 0.5),
-                         axis.title = element_text(size = 12),
-                         axis.text = element_text(size = 12))
-    BAList[[j]] = ggplotly(p)
-    
-    #STD
-    p = ggplot(data = std2plot, aes(x = refT1, y = stdValues)) +
-      geom_point(color = "black", size = 1.5) +
-      labs(title = paste("Site ID:", id, sep = ""), x = "Reference T1 (ms)", y = "SD (ms)") +
-      theme(axis.line = element_line(colour = "black"), 
-            panel.grid.major = element_blank(), 
-            panel.grid.minor = element_blank(), 
-            panel.border = element_blank(), 
-            panel.background = element_blank()) +
-      theme_bw() + theme(plot.title = element_text(size = 14, face = "bold", hjust = 0.5),
-                         axis.title = element_text(size = 12),
-                         axis.text = element_text(size = 12))
-    stdList[[j]] = ggplotly(p)
-    
-    #RMSE
-    #p = ggplot(data = rmse2plot, aes(x = refT1, y = rmseValues)) +
-    #  geom_point(color = "black", size = 1.5) +
-    #  labs(title = paste("Site ID:", id, sep = ""), x = "Reference T1 (ms)", y = "RMSE (ms)") +
-    #  theme(axis.line = element_line(colour = "black"), 
-    #        panel.grid.major = element_blank(), 
-    #        panel.grid.minor = element_blank(), 
-    #        panel.border = element_blank(), 
-    #        panel.background = element_blank()) +
-    #  theme_bw() + theme(plot.title = element_text(size = 14, face = "bold", hjust = 0.5),
-    #                     axis.title = element_text(size = 12),
-    #                     axis.text = element_text(size = 12))
-    #rmseList[[j]] = ggplotly(p)
   }
   
   #ICC(1,1): It reflects the variation between 2 or more raters who measure the same group of subjects.
   icc_test = icc(meanSites, model = "twoway", type = "agreement")
+  Pearson_test2 = cor(BAData$measValue, BAData$reference)
+  Lin_test2 = epi.ccc(BAData$measValue, BAData$reference)
+  correlations2[1,1] = Pearson_test2
+  correlations2[1,2] = Lin_test2[[1]][1]
+  correlations2[1,3] = icc_test[7]
   
   returnStats <- list("Correlation_coefficients" = correlations,
                      "BAData" = BAData,
                      "stdData" = stdData,
                      "rmseData" = rmseData,
-                     "test2" = icc_test)
+                     "corr_coef_site" = correlations2)
   return(returnStats)
   
 }

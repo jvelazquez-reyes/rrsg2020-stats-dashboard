@@ -121,21 +121,26 @@ ui <- navbarPage("T1 mapping challenge statistics", theme = shinytheme("flatly")
                  ),
                  
                  #TAB 4
-                 tabPanel("Plotly",
+                 tabPanel("Comparison Canada - Germany",
                           sidebarLayout(
                               sidebarPanel(
-                                  selectizeInput(
-                                      inputId = "SitesID", 
-                                      label = "Select a site", 
-                                      choices = unique(RefVSMeas$stdData$sid),
-                                      selected = "1.001",
-                                      multiple = TRUE
-                                  )
+                                  selectInput(inputId = "selectCompSite",
+                                                label = "Choose a site:",
+                                                choices = c("Canada", "Germany"),
+                                                selected = "Canada"),
+                                  
+                                  h2("Correlation coefficients"),
+                                  tableOutput(outputId = "CorrCanGer"),
+                                  
+                                  helpText("Mathieu, B., et al. MathieuPaperName")
+                                  
                               ),
                               
                               mainPanel(
-                                  h3("Plot different sites"),
-                                  plotlyOutput(outputId = "multPlot")
+                                  h3("Bland-Altman plot"),
+                                  plotlyOutput(outputId = "BA4"),
+                                  h3("Dispersion plot"),
+                                  plotlyOutput(outputId = "Disp4")
                               )
                           )
                  ),
@@ -345,14 +350,99 @@ server <- function(input, output) {
     output$CorrRefMeas <- renderTable(RefVSMeas$Correlation_coefficients)
     
     #TAB 4
-    output$multPlot <- renderPlotly({
+    output$BA4 <- renderPlotly({
+        if (input$selectCompSite == "Canada"){
+            RefVSMeas = measuredT1_against_referenceT1(scans = Canada)
+        }
+        else if (input$selectCompSite == "Germany"){
+            RefVSMeas = measuredT1_against_referenceT1(scans = Germany)
+        }
+        
+        p <- ggplot(data = RefVSMeas$BAData) +
+            geom_point(aes(x = average, y = difference, fill = sid,
+                           text = paste('<br> Average T1: ', signif(average,5),
+                                        '<br> Difference: ', signif(difference,4),
+                                        '<BR> Reference T1: ', signif(reference,5),
+                                        '<br> Sphere: ', sph)), 
+                       pch = 1, size = 1.5, col = "black") +
+            labs(x = "Average T1 (ms)", 
+                 y = "Measured - Reference T1 (ms)") +
+            ylim(mean(RefVSMeas$BAData$difference) - 4 * sd(RefVSMeas$BAData$difference), 
+                 mean(RefVSMeas$BAData$difference) + 4 * sd(RefVSMeas$BAData$difference)) +
+            # Línea de bias
+            geom_hline(yintercept = mean(RefVSMeas$BAData$difference), lwd = 1) +
+            # Línea en y=0
+            geom_hline(yintercept = 0, lty = 3, col = "grey30") +
+            # Limits of Agreement
+            geom_hline(yintercept = mean(RefVSMeas$BAData$difference) + 
+                           1.96 * sd(RefVSMeas$BAData$difference), 
+                       lty = 2, col = "firebrick") +
+            geom_hline(yintercept = mean(RefVSMeas$BAData$difference) - 
+                           1.96 * sd(RefVSMeas$BAData$difference), 
+                       lty = 2, col = "firebrick") +
+            theme(panel.grid.major = element_blank(), 
+                  panel.grid.minor = element_blank()) +
+            geom_text(label = "Bias", x = 1000, y = mean(RefVSMeas$BAData$difference) + 10, size = 3, 
+                      colour = "black") +
+            geom_text(label = "+1.96SD", x = 1000, y = mean(RefVSMeas$BAData$difference) + 
+                          1.96 * sd(RefVSMeas$BAData$difference) + 10, size = 3, 
+                      colour = "firebrick") +
+            geom_text(label = "-1.96SD", x = 1000, y = mean(RefVSMeas$BAData$difference) - 
+                          1.96 * sd(RefVSMeas$BAData$difference) - 10, size = 3, 
+                      colour = "firebrick") +
+            theme_bw() + theme(plot.title = element_text(size = 14, face = "bold", hjust = 0.5),
+                               axis.title = element_text(size = 12),
+                               axis.text = element_text(size = 12))
+        ggplotly(p, tooltip = "text")
+    })
+    
+    output$Disp4 <- renderPlotly({
+        if (input$selectCompSite == "Canada"){
+            RefVSMeas = measuredT1_against_referenceT1(scans = Canada)
+        }
+        else if (input$selectCompSite == "Germany"){
+            RefVSMeas = measuredT1_against_referenceT1(scans = Germany)
+        }
+ 
+        p <- ggplot(data = RefVSMeas$BAData) +
+            geom_point(aes(x = reference, y = measValue, fill = sid,
+                           text = paste('<br> Measured T1 Value: ', signif(measValue,6),
+                                        '<br> Reference T1 Value: ', signif(reference,6),
+                                        '<br> Sphere: ', sph)),
+                       color = "black", size = 1.5) +
+            labs(x = "Reference T1 value (ms)", y = "Measured T1 value (ms)") +
+            geom_smooth(aes(x = reference, y = measValue), method = "lm", formula = y~x,
+                        se = FALSE, color = "red", lwd = 0.5) +
+            geom_abline(intercept = 0, slope = 1, lwd = 0.7, col = "blue") +
+            theme(axis.line = element_line(colour = "black"), 
+                  panel.grid.major = element_blank(), 
+                  panel.grid.minor = element_blank(), 
+                  panel.border = element_blank(), 
+                  panel.background = element_blank()) +
+            theme_bw() + theme(plot.title = element_text(size = 14, face = "bold", hjust = 0.5),
+                               axis.title = element_text(size = 12),
+                               axis.text = element_text(size = 12))
+        ggplotly(p, tooltip = "text")
+    })
+    
+    output$CorrCanGer <- renderTable({
+        if (input$selectCompSite == "Canada"){
+            RefVSMeas = measuredT1_against_referenceT1(scans = Canada)
+        }
+        else if (input$selectCompSite == "Germany"){
+            RefVSMeas = measuredT1_against_referenceT1(scans = Germany)
+        }
+        
+        RefVSMeas$corr_coef_site
+    })
+    
         #req(input$SitesID)
         #if (identical(input$SitesID, "")) return(NULL)
-        plot_ly(RefVSMeas$stdData, x = ~sph, y = ~stdValues, split = ~sid) %>%
-            filter(sid %in% input$SitesID) %>%
-            #group_by(sid) %>%
-            add_lines()
-    })
+        #plot_ly(RefVSMeas$stdData, x = ~sph, y = ~stdValues, split = ~sid) %>%
+        #    filter(sid %in% input$SitesID) %>%
+        #    #group_by(sid) %>%
+        #    add_lines()
+
     #output$multPlot <- renderPlotly({
     #    req(input$SitesID)
     #    if (identical(input$SitesID, "")) return(NULL)
@@ -414,9 +504,9 @@ server <- function(input, output) {
         ggplotly(p, tooltip = "text")
     })
     
-    firstLME <- lmer(dataSphere ~ t1ref + MRIversion + (1|sid) + (1|sphere), data = sitesLMEM$dataLME)
+    firstLME <- lmer(dataSphere ~ t1ref + MRIversion + (1 + MRIversion|sid), data = sitesLMEM$dataLME)
     
-    output$summaryLME <- renderUI({HTML(tab_model(firstLME)$knitr)})
+    output$summaryLME <- renderUI({HTML(tab_model(firstLME, show.se = TRUE)$knitr)})
     
     output$diagLME <- renderPlot({
         if (input$diagnosticLME == "Linearity"){
