@@ -359,36 +359,36 @@ server <- function(input, output) {
         }
         
         p <- ggplot(data = RefVSMeas$BAData) +
-            geom_point(aes(x = average, y = difference, fill = sid,
-                           text = paste('<br> Average T1: ', signif(average,5),
-                                        '<br> Difference: ', signif(difference,4),
+            geom_point(aes(x = average, y = perc_difference, fill = sid,
+                           text = paste('<br> Difference (%): ', signif(perc_difference,4),
+                                        '<br> Average T1: ', signif(average,5),
                                         '<BR> Reference T1: ', signif(reference,5),
                                         '<br> Sphere: ', sph)), 
                        pch = 1, size = 1.5, col = "black") +
             labs(x = "Average T1 (ms)", 
-                 y = "Measured - Reference T1 (ms)") +
-            ylim(mean(RefVSMeas$BAData$difference) - 4 * sd(RefVSMeas$BAData$difference), 
-                 mean(RefVSMeas$BAData$difference) + 4 * sd(RefVSMeas$BAData$difference)) +
-            # Línea de bias
-            geom_hline(yintercept = mean(RefVSMeas$BAData$difference), lwd = 1) +
-            # Línea en y=0
-            geom_hline(yintercept = 0, lty = 3, col = "grey30") +
+                 y = "Difference (%)") +
+            ylim(mean(RefVSMeas$BAData$perc_difference) - 4 * sd(RefVSMeas$BAData$perc_difference), 
+                 mean(RefVSMeas$BAData$perc_difference) + 4 * sd(RefVSMeas$BAData$perc_difference)) +
+            # Bias line
+            geom_hline(yintercept = mean(RefVSMeas$BAData$perc_difference), lwd = 1) +
+            # Line: y=0
+            #geom_hline(yintercept = 0, lty = 3, col = "grey30") +
             # Limits of Agreement
-            geom_hline(yintercept = mean(RefVSMeas$BAData$difference) + 
-                           1.96 * sd(RefVSMeas$BAData$difference), 
+            geom_hline(yintercept = mean(RefVSMeas$BAData$perc_difference) + 
+                           1.96 * sd(RefVSMeas$BAData$perc_difference), 
                        lty = 2, col = "firebrick") +
-            geom_hline(yintercept = mean(RefVSMeas$BAData$difference) - 
-                           1.96 * sd(RefVSMeas$BAData$difference), 
+            geom_hline(yintercept = mean(RefVSMeas$BAData$perc_difference) - 
+                           1.96 * sd(RefVSMeas$BAData$perc_difference), 
                        lty = 2, col = "firebrick") +
             theme(panel.grid.major = element_blank(), 
                   panel.grid.minor = element_blank()) +
-            geom_text(label = "Bias", x = 1000, y = mean(RefVSMeas$BAData$difference) + 10, size = 3, 
+            geom_text(label = "Bias", x = 1800, y = mean(RefVSMeas$BAData$perc_difference) + 10, size = 3, 
                       colour = "black") +
-            geom_text(label = "+1.96SD", x = 1000, y = mean(RefVSMeas$BAData$difference) + 
-                          1.96 * sd(RefVSMeas$BAData$difference) + 10, size = 3, 
+            geom_text(label = "+1.96SD", x = 1800, y = mean(RefVSMeas$BAData$perc_difference) + 
+                          1.96 * sd(RefVSMeas$BAData$perc_difference) + 10, size = 3, 
                       colour = "firebrick") +
-            geom_text(label = "-1.96SD", x = 1000, y = mean(RefVSMeas$BAData$difference) - 
-                          1.96 * sd(RefVSMeas$BAData$difference) - 10, size = 3, 
+            geom_text(label = "-1.96SD", x = 1800, y = mean(RefVSMeas$BAData$perc_difference) - 
+                          1.96 * sd(RefVSMeas$BAData$perc_difference) - 10, size = 3, 
                       colour = "firebrick") +
             theme_bw() + theme(plot.title = element_text(size = 14, face = "bold", hjust = 0.5),
                                axis.title = element_text(size = 12),

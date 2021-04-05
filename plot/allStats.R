@@ -45,7 +45,7 @@ source(paste(path_to_src, "comparison_across_sites.R", sep = ""))
 
 US <- 34:39
 Germany <- 13:26
-Canada <- c(3,4,11,12,27:30,40)
+Canada <- c(4,11,12,27:30,40)
 
 SiteUS <- comparison_across_sites(US)
 SiteGermany <- comparison_across_sites(Germany)

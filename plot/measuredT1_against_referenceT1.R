@@ -31,7 +31,8 @@ measuredT1_against_referenceT1 <- function(scans){
     reference <- refT1
     difference <- measValue - reference
     average <- (measValue + reference)/2
-    BA2plot <- data.frame(sid, sph, measValue, reference, difference, average)
+    perc_difference <- difference*100/average
+    BA2plot <- data.frame(sid, sph, measValue, reference, difference, perc_difference, average)
     
     #STD
     stdValues <- stdSites[,j]
