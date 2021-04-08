@@ -3,6 +3,7 @@ measuredT1_against_referenceT1 <- function(scans){
   stdSites <- data.frame()
   mseSites <- data.frame()
   rmseSites <- data.frame()
+  data4icc <- data.frame()
   correlations <- data.frame(Site=as.numeric(), R=as.numeric(), Lin=as.numeric())
   correlations2 <- data.frame(R=as.numeric(), Lin=as.numeric(), ICC=as.numeric())
   for (j in seq(1,length(scans))){
@@ -21,6 +22,9 @@ measuredT1_against_referenceT1 <- function(scans){
       meanSites[k,j] = mean(measuredT1)
       stdSites[k,j] = sd(measuredT1)
       rmseSites[k,j] = rmse(measuredT1, rep(refT1[k],length(measuredT1)))
+      
+      #Data for the ICC calculation
+      data4icc[k,j] = abs(meanSites[k,j] - refT1[k])*100/refT1[k]
     }
     
     sid <- as.matrix(rep(id,14))
@@ -69,8 +73,8 @@ measuredT1_against_referenceT1 <- function(scans){
     correlations[j,3] = Lin_test[[1]][1]
   }
   
-  #ICC(1,1): It reflects the variation between 2 or more raters who measure the same group of subjects.
-  icc_test = icc(meanSites, model = "twoway", type = "agreement")
+  #ICC(2,1): It reflects the variation between 2 or more raters who measure the same group of subjects.
+  icc_test = icc(data4icc, model = "twoway", type = "agreement")
   Pearson_test2 = cor(BAData$measValue, BAData$reference)
   Lin_test2 = epi.ccc(BAData$measValue, BAData$reference)
   correlations2[1,1] = Pearson_test2
@@ -81,7 +85,8 @@ measuredT1_against_referenceT1 <- function(scans){
                      "BAData" = BAData,
                      "stdData" = stdData,
                      "rmseData" = rmseData,
-                     "corr_coef_site" = correlations2)
+                     "corr_coef_site" = correlations2,
+                     "test" = data4icc)
   return(returnStats)
   
 }
