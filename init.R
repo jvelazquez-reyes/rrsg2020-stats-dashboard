@@ -3,7 +3,7 @@
 # Example R code to install packages if not already installed
 #
 
-my_packages = c("reticulate", "Metrics","gridExtra","ggplot2","HDInterval","devtools","tibble",
+my_packages = c("reticulate", "Metrics","gridExtra","ggplot2","HDInterval","remotes","tibble",
                 "stringi","DescTools","rjson","viridis","irr","sjPlot","plotly","shiny",
                 "shinyjs","shinythemes","shinydashboard")
 
