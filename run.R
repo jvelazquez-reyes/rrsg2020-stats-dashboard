@@ -1,11 +1,7 @@
 
 library(shiny)
-library(remotes)
 
 port <- Sys.getenv('PORT')
-
-# Install GRousselet/rogme package
-remotes::install_github("GRousselet/rogme")
 
 shiny::runApp(
   appDir = getwd(),
