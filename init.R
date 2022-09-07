@@ -3,7 +3,7 @@
 # Example R code to install packages if not already installed
 #
 
-my_packages = c("reticulate", "Metrics","gridExtra","ggplot2","HDInterval","devtools","tibble",
+my_packages = c("reticulate", "Metrics","gridExtra","ggplot2","HDInterval","remotes","tibble",
                 "stringi","DescTools","rjson","viridis","irr","sjPlot","plotly","shiny",
                 "shinyjs","shinythemes","shinydashboard")
 
@@ -17,5 +17,5 @@ invisible(sapply(my_packages, install_if_missing))
 
 ## Install rogme from Github
 if (!"rogme" %in% rownames(installed.packages())) {
-  devtools::install_github("GRousselet/rogme")
+  remotes::install_github("GRousselet/rogme")
 }
